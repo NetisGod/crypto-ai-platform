@@ -1,13 +1,14 @@
 /**
  * CryptoPanic news ingestion.
- * API: https://cryptopanic.com/api/v1/posts/
- * Requires CRYPTOPANIC_AUTH_TOKEN in env (get from cryptopanic.com/about/api).
+ * API: https://cryptopanic.com/developers/api/ — base: https://cryptopanic.com/api/developer/v2, endpoint: GET /posts/
+ * Requires CRYPTOPANIC_AUTH_TOKEN in env (auth_token in every request).
  */
 
 import type { NormalizedNewsItem } from "./types";
 import type { Sentiment } from "@/types/database";
 
-const CRYPTOPANIC_URL = "https://cryptopanic.com/api/v1/posts/";
+const CRYPTOPANIC_BASE = "https://cryptopanic.com/api/developer/v2";
+const CRYPTOPANIC_POSTS_URL = `${CRYPTOPANIC_BASE}/posts/`;
 
 interface CryptoPanicPost {
   id: number;
@@ -45,7 +46,7 @@ export async function fetchCryptoPanicNews(options?: {
     options?.authToken ?? process.env.CRYPTOPANIC_AUTH_TOKEN ?? "";
   const { filter, limit = 50 } = options ?? {};
 
-  const url = new URL(CRYPTOPANIC_URL);
+  const url = new URL(CRYPTOPANIC_POSTS_URL);
   if (token) url.searchParams.set("auth_token", token);
   url.searchParams.set("public", "true");
   if (filter) url.searchParams.set("filter", filter);

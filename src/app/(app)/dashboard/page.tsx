@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dashboard/metric-card";
-import { ChartCard } from "@/components/dashboard/chart-card";
+import { BtcChartCard } from "@/components/dashboard/btc-chart-card";
 import { NewsFeed } from "@/components/dashboard/news-feed";
+import { AiMarketBriefCard } from "@/components/dashboard/ai-market-brief-card";
 import { formatCompactNum } from "@/data/mock-data";
-import type { TokenSummary, PricePoint } from "@/data/mock-data";
+import type { TokenSummary } from "@/data/mock-data";
 import type { NewsItem } from "@/data/mock-data";
 import { TrendingUp, DollarSign, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { MOCK_TOKENS, MOCK_NEWS, MOCK_PRICE_HISTORY } from "@/data/mock-data";
+import { MOCK_TOKENS, MOCK_NEWS } from "@/data/mock-data";
 
 type DashboardData = {
   tokens: TokenSummary[];
   news: NewsItem[];
-  priceHistoryBtc: PricePoint[];
 };
 
 export default function DashboardPage() {
@@ -31,14 +31,12 @@ export default function DashboardPage() {
         setData({
           tokens: MOCK_TOKENS,
           news: MOCK_NEWS,
-          priceHistoryBtc: MOCK_PRICE_HISTORY.BTC,
         })
       );
   }, []);
 
   const tokens = data?.tokens ?? MOCK_TOKENS;
   const news = data?.news ?? MOCK_NEWS;
-  const priceHistoryBtc = data?.priceHistoryBtc ?? MOCK_PRICE_HISTORY.BTC;
 
   const btc = tokens.find((t) => t.symbol === "BTC");
   const eth = tokens.find((t) => t.symbol === "ETH");
@@ -84,13 +82,11 @@ export default function DashboardPage() {
         />
       </div>
 
+      <AiMarketBriefCard />
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <ChartCard
-            title="BTC 24h price"
-            data={priceHistoryBtc}
-            valuePrefix="$"
-          />
+          <BtcChartCard />
         </div>
         <NewsFeed items={news} maxHeight="280px" />
       </div>

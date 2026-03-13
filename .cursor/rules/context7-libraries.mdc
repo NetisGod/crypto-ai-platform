@@ -1,0 +1,31 @@
+---
+description: 
+alwaysApply: true
+---
+
+# Context7 for Library-Related Tasks
+
+Whenever you work on anything related to **external libraries or dependencies**, you must:
+
+- Prefer using the **Context7 MCP server** to:
+  - reason about library installation options and versions,
+  - design or adjust imports and module wiring,
+  - review or propose configuration changes (e.g. config files, env vars, framework setup),
+  - plan and implement library integrations,
+  - debug issues that involve a third-party library or dependency.
+
+## When to Use Context7
+
+- Installing or upgrading a library or SDK.
+- Choosing the right package, version, or peer dependencies.
+- Setting up or editing configuration for a library (e.g. client setup, middlewares, providers).
+- Integrating a new service (APIs, SDKs, analytics, observability, auth providers, etc.).
+- Investigating runtime errors, type issues, or unexpected behavior that originate from a library.
+
+## How to Apply This Rule
+
+- Before making a decision about a library, **consult Context7** to:
+  - understand recommended patterns and best practices,
+  - check for breaking changes or deprecations,
+  - validate that the proposed code, imports, and configuration are correct.
+- Use the insights from Context7 to **guide, not replace**, your own reasoning and the existing project conventions.
