@@ -1,0 +1,69 @@
+---
+description: Rules for working on the AI Market Brief feature (multi-agent LangGraph workflow)
+globs:
+  - src/ai/agents/**
+  - src/ai/workflows/market-brief*
+  - src/app/api/ai/market-brief/**
+  - src/components/dashboard/ai-market-brief*
+  - src/components/dashboard/market-brief-debug*
+---
+
+# AI Market Brief — Cursor Rules
+
+When working on the AI Market Brief feature, always follow the full feature playbook:
+**docs/features/multi_agent_market_brief_feature_playbook.md**
+
+Read it before making changes.
+
+---
+
+## Architecture constraints
+
+- The Market Brief uses a **multi-agent pipeline orchestrated by LangGraph**
+- Do NOT replace it with a single LLM call
+- Do NOT collapse agents into one prompt
+- Do NOT remove the LangGraph graph
+
+## Required agents (preserve all six)
+
+1. **Market Data Agent** — quantitative market structure analysis
+2. **News Agent** — interprets recent market-moving news
+3. **Narrative Agent** — identifies active market narratives
+4. **Risk Agent** — detects short-term market risks
+5. **Synthesizer Agent** — merges sub-analyses into a final brief
+6. **Validator Agent** — validates and normalizes the output
+
+## API contract
+
+- `GET /api/ai/market-brief` returns the **latest cached brief** from the database — no LLM calls
+- `POST /api/ai/market-brief` triggers the **full multi-agent generation workflow**
+
+## Database
+
+- Store final brief in `market_briefs` table
+- `debug_json` column must store all agent outputs for the debug drawer
+
+## Observability
+
+- Every POST generation must be traced in **Langfuse** as `market_brief_pipeline`
+- GET must NOT create a Langfuse trace
+- Log agent prompts, outputs, tokens, latency, cost
+
+## UI
+
+- Dashboard shows the AI Market Brief card with summary, drivers, risks, confidence
+- **Refresh** button triggers POST — disable while loading, no auto-generation on page load
+- **"How this brief was built"** opens a drawer/modal showing each agent's output
+
+## Code organization
+
+- Agent files live in `src/ai/agents/`
+- Workflow graph lives in `src/ai/workflows/market-brief-graph.ts`
+- API route lives in `src/app/api/ai/market-brief/route.ts`
+- UI components live in `src/components/dashboard/`
+
+## Reuse rules
+
+- Use shared market data layer — do not fetch prices directly in agents
+- Use shared AI workflow runner and Langfuse integration
+- Do not duplicate prompt execution or LLM calling logic across agents
