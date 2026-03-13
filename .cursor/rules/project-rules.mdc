@@ -1,0 +1,381 @@
+---
+description: System architecture reference and coding standards for the AI Crypto Market Intelligence Platform
+alwaysApply: true
+---
+
+# Cursor Project Rules — AI Crypto Market Intelligence Platform
+
+This document is the **source of truth for AI agents (Cursor, ChatGPT, Claude, etc.)**
+working on this repository. It explains the architecture, coding standards, and rules
+for implementing new features.
+
+The goal is that **any AI agent reading this file can immediately understand the system.**
+
+---
+
+# 1. Project Overview
+
+This project is an **AI-powered crypto market intelligence platform**.
+
+It aggregates:
+- real-time market data
+- crypto news
+- AI analysis
+- narrative detection
+- historical similarity insights
+
+and presents them through an interactive dashboard.
+
+Main capabilities:
+
+• Real-time market monitoring
+• AI-generated market brief
+• Token-level analysis
+• Narrative detection
+• Ask-AI interface
+• Historical similarity (RAG)
+• Voice briefings
+
+---
+
+# 2. Technology Stack
+
+Frontend
+- Next.js
+- React
+- TypeScript
+- TailwindCSS
+- shadcn/ui
+- Chart library
+
+Backend
+- Next.js API routes
+- TypeScript services
+
+AI stack
+- LangChain
+- LangGraph
+- LlamaIndex
+- OpenRouter
+- Langfuse
+
+Storage
+- Supabase (Postgres)
+- pgvector (embeddings)
+
+Optional / advanced
+- Ollama
+- vLLM
+- HuggingFace
+- ElevenLabs
+
+---
+
+# 3. High-Level Architecture
+
+User / Browser
+    ↓
+Next.js Frontend
+    ↓
+Next.js API Layer
+    ↓
+Market Data Layer
+    ↓
+AI Workflow Layer
+    ↓
+Multi-Agent Layer (LangGraph)
+    ↓
+RAG Retrieval Layer
+    ↓
+Database + Vector Store
+    ↓
+Model Router
+    ↓
+Observability (Langfuse)
+
+---
+
+# 4. Folder Structure
+
+src/
+
+app/
+api/
+
+components/
+dashboard/
+charts/
+ai/
+
+services/
+market/
+news/
+
+ai/
+workflows/
+agents/
+prompts/
+retrieval/
+eval/
+
+lib/
+model-router/
+semantic-cache/
+
+---
+
+# 5. Market Data Layer
+
+Primary data source:
+
+Binance API
+
+Used for:
+- current prices
+- 24h statistics
+- candlestick chart data
+- volume
+
+Shared services:
+
+getCurrentPrices()
+getChartData()
+getTopMovers()
+getRecentNews()
+
+Rules:
+
+• Do not fetch market data directly in components
+• Always use shared services
+• All market data must go through internal API routes
+
+---
+
+# 6. Database Schema
+
+Database: Supabase (Postgres)
+
+Tables:
+
+assets
+market_snapshots
+news_items
+narratives
+narrative_news
+market_briefs
+ai_runs
+eval_runs
+
+Vector embeddings:
+
+pgvector
+
+Used for:
+
+• news embeddings
+• narrative embeddings
+• historical similarity search
+
+---
+
+# 7. AI Workflow Layer
+
+All AI logic must live inside:
+
+/ai/workflows
+
+Examples:
+
+market-brief.ts
+token-analysis.ts
+ask-market.ts
+narrative-detection.ts
+
+Shared runner:
+
+runAIWorkflow()
+
+Responsibilities:
+
+• execute prompts
+• validate structured outputs
+• retry on failure
+• fallback models
+• log traces in Langfuse
+
+---
+
+# 8. Multi-Agent System
+
+Agents:
+
+Market Data Agent
+News Agent
+Narrative Agent
+Risk Agent
+Historical Similarity Agent
+Synthesizer Agent
+Validator Agent
+
+Orchestration:
+
+LangGraph
+
+Flow:
+
+collect signals → agents analyze → synthesizer merges → validator checks output
+
+---
+
+# 9. RAG Retrieval Layer
+
+Sources:
+
+news archive
+narrative history
+historical market events
+token-specific context
+
+Retrieval strategies:
+
+vector search
+hybrid search
+semantic similarity
+reranking
+
+Implementation tools:
+
+LlamaIndex
+LangChain retrievers
+
+---
+
+# 10. Model Routing
+
+Models must not be hardcoded.
+
+Routing strategy:
+
+cheap model → classification
+medium model → analysis
+strong model → final reasoning
+
+Providers:
+
+OpenRouter
+Ollama
+vLLM
+
+---
+
+# 11. Semantic Caching
+
+Repeated prompts should be cached.
+
+Examples:
+
+Why is ETH pumping today?
+What is driving ETH price today?
+Why did ETH move up today?
+
+These should resolve to the same cached response if context is unchanged.
+
+---
+
+# 12. Observability
+
+All AI calls must be traced.
+
+Tool:
+
+Langfuse
+
+Track:
+
+tokens
+latency
+cost
+prompt
+response
+workflow state
+
+---
+
+# 13. Coding Rules
+
+Always:
+
+• write TypeScript
+• strongly type responses
+• use Zod schemas for structured AI outputs
+• centralize data access
+• avoid duplicate logic
+• implement retries for AI calls
+• add logging
+
+Never:
+
+• call LLMs directly inside React components
+• fetch market data inside UI components
+• duplicate API logic
+
+---
+
+# 14. Testing Rules
+
+Every new AI feature must include:
+
+1. manual test checklist
+2. structured output validation
+3. error handling
+4. Langfuse trace verification
+
+Test scenarios:
+
+• API success
+• API failure
+• invalid AI output
+• retry logic
+• caching behavior
+
+---
+
+# 15. Development Roadmap
+
+Phase 1 — Foundation
+
+• Market data layer
+• Dashboard
+• Charts
+• Top movers
+• AI Market Brief
+• Ask AI
+• Langfuse logging
+
+Phase 2 — AI depth
+
+• LangGraph multi-agent market brief
+• RAG historical retrieval
+• model routing
+• semantic cache
+
+Phase 3 — Advanced
+
+• voice brief (ElevenLabs)
+• local inference (Ollama / vLLM)
+• HuggingFace classifiers
+
+---
+
+# 16. Instructions for AI Agents
+
+When implementing features:
+
+1. read this document
+2. follow the architecture
+3. reuse existing services
+4. keep AI workflows modular
+5. maintain logging and observability
+6. avoid architectural changes without reason
+
+This document is the **system architecture reference** for all future development.
