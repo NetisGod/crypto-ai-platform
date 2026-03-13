@@ -2,11 +2,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTokenPageData, formatCompactNum } from "@/lib/dashboard-data";
 import { getTokenBySymbol, MOCK_PRICE_HISTORY } from "@/data/mock-data";
+import type { TokenSummary, PricePoint } from "@/data/mock-data";
 import { ChartCard } from "@/components/dashboard/chart-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { fetchCurrentPrices, fetchMarketChart } from "@/services/market/binance";
+import type { AssetSymbol } from "@/services/market/types";
+
+const BINANCE_ASSETS = new Set<string>(["BTC", "ETH"]);
 
 export async function generateMetadata({
   params,
@@ -14,6 +19,14 @@ export async function generateMetadata({
   params: Promise<{ symbol: string }>;
 }) {
   const { symbol } = await params;
+  const upper = symbol.toUpperCase();
+
+  if (BINANCE_ASSETS.has(upper)) {
+    const prices = await fetchCurrentPrices().catch(() => []);
+    const p = prices.find((x) => x.symbol === upper);
+    if (p) return { title: `${p.symbol} – ${p.name} | Crypto AI`, description: `Price and metrics for ${p.symbol}.` };
+  }
+
   const data = await getTokenPageData(symbol);
   const token = data?.token ?? getTokenBySymbol(symbol);
   if (!token) return { title: "Token not found" };
@@ -29,11 +42,44 @@ export default async function TokenPage({
   params: Promise<{ symbol: string }>;
 }) {
   const { symbol } = await params;
-  const data = await getTokenPageData(symbol);
-  const token = data?.token ?? getTokenBySymbol(symbol);
+  const upper = symbol.toUpperCase();
+
+  let token: TokenSummary | null = null;
+  let chartData: PricePoint[] = [];
+
+  if (BINANCE_ASSETS.has(upper)) {
+    const [prices, klines] = await Promise.all([
+      fetchCurrentPrices().catch(() => []),
+      fetchMarketChart(upper as AssetSymbol, "1D").catch(() => []),
+    ]);
+    const p = prices.find((x) => x.symbol === upper);
+    if (p) {
+      token = {
+        symbol: p.symbol,
+        name: p.name,
+        price: p.currentPrice,
+        change24h: p.priceChangePercentage24h,
+        change7d: 0,
+        volume24h: p.volume24h,
+        marketCap: 0,
+      };
+    }
+    if (klines.length) {
+      chartData = klines.map((k) => ({ time: k.time, value: k.value }));
+    }
+  }
+
+  if (!token) {
+    const data = await getTokenPageData(symbol);
+    token = data?.token ?? getTokenBySymbol(symbol) ?? null;
+    chartData = data?.chartData ?? MOCK_PRICE_HISTORY[upper] ?? MOCK_PRICE_HISTORY.BTC;
+  }
+
   if (!token) notFound();
 
-  const chartData = data?.chartData ?? MOCK_PRICE_HISTORY[token.symbol] ?? MOCK_PRICE_HISTORY.BTC;
+  if (!chartData.length) {
+    chartData = MOCK_PRICE_HISTORY[token.symbol] ?? MOCK_PRICE_HISTORY.BTC;
+  }
 
   return (
     <div className="space-y-8">
@@ -68,12 +114,12 @@ export default async function TokenPage({
         />
         <MetricCard
           title="7d change"
-          value={`${token.change7d >= 0 ? "+" : ""}${token.change7d.toFixed(2)}%`}
-          change={token.change7d}
+          value={token.change7d !== 0 ? `${token.change7d >= 0 ? "+" : ""}${token.change7d.toFixed(2)}%` : "—"}
+          change={token.change7d !== 0 ? token.change7d : undefined}
         />
         <MetricCard
-          title="Market cap"
-          value={formatCompactNum(token.marketCap)}
+          title="24h volume"
+          value={formatCompactNum(token.volume24h)}
         />
       </div>
 
@@ -107,20 +153,6 @@ export default async function TokenPage({
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">24h volume</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">
-            {formatCompactNum(token.volume24h)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Total trading volume in the last 24 hours
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
