@@ -5,11 +5,11 @@
  * recent news signals with any previously tracked narratives from the database.
  * Runs as a child span under the parent LangGraph workflow trace in Langfuse.
  *
- * Uses the shared AI client (callStructuredJson) for LLM execution and Zod
- * validation. Includes retry logic aligned with the shared workflow runner.
+ * Uses the AI Runner (runAIStructured) for LLM execution — model selection
+ * is delegated to the Model Router.
  */
 
-import { callStructuredJson } from "@/lib/ai-client";
+import { runAIStructured } from "@/ai/runner/runAI";
 import { logScore, logError, type LangfuseTrace } from "@/lib/langfuse";
 import {
   type NewsRow,
@@ -17,11 +17,7 @@ import {
   type NarrativeAnalysis,
   NarrativeAnalysisSchema,
   createAgentSpan,
-  AGENT_MODEL,
 } from "./types";
-
-const MAX_RETRIES = 2;
-const FALLBACK_MODEL = "gpt-4.1-nano";
 
 const SYSTEM_PROMPT = `You are a senior crypto narrative analyst specializing in thematic pattern detection.
 
@@ -166,43 +162,31 @@ export async function runNarrativeAgent(
     existing_narratives: narratives.map((n) => n.name),
   });
 
-  let lastError: unknown = null;
+  try {
+    const result = await runAIStructured(
+      "extraction",
+      buildUserPrompt(news, narratives),
+      NarrativeAnalysisSchema,
+      { systemPrompt: SYSTEM_PROMPT },
+    );
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const model = attempt === 0 ? AGENT_MODEL : FALLBACK_MODEL;
+    await logScore(span, "structured_output_valid", 1);
+    await logScore(span, "confidence_score", result.data.confidence);
+    await logScore(span, "narrative_count", result.data.top_narratives.length);
+    await logScore(span, "affected_token_count", result.data.affected_tokens.length);
 
-    try {
-      const result = await callStructuredJson<NarrativeAnalysis>({
-        model,
-        systemPrompt: SYSTEM_PROMPT,
-        userPrompt: buildUserPrompt(news, narratives),
-        schema: NarrativeAnalysisSchema,
-        trace: span,
-        temperature: 0.3,
-      });
+    end({
+      model: result.model,
+      latencyMs: result.latencyMs,
+      tokens: { promptTokens: result.promptTokens, completionTokens: result.completionTokens },
+      output: result.data,
+    });
 
-      await logScore(span, "structured_output_valid", 1);
-      await logScore(span, "confidence_score", result.data.confidence);
-      await logScore(span, "narrative_count", result.data.top_narratives.length);
-      await logScore(span, "affected_token_count", result.data.affected_tokens.length);
-
-      end({
-        model: result.model,
-        latencyMs: result.latencyMs,
-        tokens: result.usage,
-        output: result.data,
-      });
-
-      return result.data;
-    } catch (error) {
-      lastError = error;
-      await logScore(span, "structured_output_valid", 0);
-      await logError(span, error);
-    }
+    return result.data;
+  } catch (error) {
+    await logScore(span, "structured_output_valid", 0);
+    await logError(span, error);
+    end({ error: error instanceof Error ? error.message : String(error) });
+    throw error;
   }
-
-  end({ error: lastError instanceof Error ? lastError.message : String(lastError) });
-  throw lastError instanceof Error
-    ? lastError
-    : new Error(`Narrative Agent failed after ${MAX_RETRIES} attempts`);
 }

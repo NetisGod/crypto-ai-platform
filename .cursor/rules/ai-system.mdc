@@ -1,0 +1,105 @@
+# AI System Rules
+
+This project implements an AI market intelligence platform.
+
+All AI workflows must follow these architecture rules.
+
+---
+
+# AI Execution Flow
+
+LangGraph Workflow  
+↓  
+Agent  
+↓  
+AI Runner  
+↓  
+Model Router  
+↓  
+Provider  
+↓  
+LLM
+
+Agents must never call LLM providers directly.
+
+---
+
+# Required Infrastructure
+
+All AI tasks must go through:
+
+src/ai/runner/runAI.ts
+
+which internally uses:
+
+src/ai/router/modelRouter.ts
+
+---
+
+# Routing Rules
+
+Use task-based routing:
+
+classification → cheap model  
+extraction → medium model  
+reasoning → strong model  
+synthesis → strong model  
+validation → cheap model
+
+---
+
+# Provider Layer
+
+All provider calls must go through:
+
+src/ai/providers/
+
+Example:
+
+openrouter.ts
+
+---
+
+# Prohibited Patterns
+
+Do not allow:
+
+openai.chat(...)  
+anthropic.messages(...)  
+
+inside agents.
+
+Agents must only call:
+
+runAI(task, prompt)
+
+---
+
+# LangGraph Integration
+
+All complex AI workflows must be implemented as LangGraph graphs.
+
+Agents should remain small and composable.
+
+---
+
+# Observability
+
+All AI calls should be traceable and observable.
+
+Future integrations:
+
+Langfuse  
+ai_runs table  
+evaluation datasets
+
+---
+
+# Future Architecture
+
+System will later support:
+
+- RAG retrieval
+- semantic caching
+- hybrid AI models
+- model routing strategies

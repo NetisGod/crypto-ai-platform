@@ -18,5 +18,7 @@ export {
   type RiskAnalysis,
   type SynthesizedBrief,
   type ValidationResult,
-  AGENT_MODEL,
+  type AgentTaskType,
+  type AIExecutionMetadata,
+  type MarketBriefDebugPayload,
 } from "./types";

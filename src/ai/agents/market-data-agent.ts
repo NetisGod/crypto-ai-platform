@@ -5,22 +5,18 @@
  * and produces a structured market signal summary. Runs as a child span under
  * the parent LangGraph workflow trace in Langfuse.
  *
- * Uses the shared AI client (callStructuredJson) for LLM execution and Zod
- * validation. Includes retry logic aligned with the shared workflow runner.
+ * Uses the AI Runner (runAIStructured) for LLM execution — model selection
+ * is delegated to the Model Router.
  */
 
-import { callStructuredJson } from "@/lib/ai-client";
+import { runAIStructured } from "@/ai/runner/runAI";
 import { logScore, logError, type LangfuseTrace } from "@/lib/langfuse";
 import {
   type SnapshotRow,
   type MarketDataAnalysis,
   MarketDataAnalysisSchema,
   createAgentSpan,
-  AGENT_MODEL,
 } from "./types";
-
-const MAX_RETRIES = 2;
-const FALLBACK_MODEL = "gpt-4.1-nano";
 
 const SYSTEM_PROMPT = `You are a senior quantitative crypto market analyst at a digital-asset trading desk.
 
@@ -133,42 +129,30 @@ export async function runMarketDataAgent(
     symbols: snapshots.map((s) => s.symbol),
   });
 
-  let lastError: unknown = null;
+  try {
+    const result = await runAIStructured(
+      "extraction",
+      buildUserPrompt(snapshots),
+      MarketDataAnalysisSchema,
+      { systemPrompt: SYSTEM_PROMPT },
+    );
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const model = attempt === 0 ? AGENT_MODEL : FALLBACK_MODEL;
+    await logScore(span, "structured_output_valid", 1);
+    await logScore(span, "confidence_score", result.data.confidence);
+    await logScore(span, "signal_count", result.data.key_signals.length);
 
-    try {
-      const result = await callStructuredJson<MarketDataAnalysis>({
-        model,
-        systemPrompt: SYSTEM_PROMPT,
-        userPrompt: buildUserPrompt(snapshots),
-        schema: MarketDataAnalysisSchema,
-        trace: span,
-        temperature: 0.2,
-      });
+    end({
+      model: result.model,
+      latencyMs: result.latencyMs,
+      tokens: { promptTokens: result.promptTokens, completionTokens: result.completionTokens },
+      output: result.data,
+    });
 
-      await logScore(span, "structured_output_valid", 1);
-      await logScore(span, "confidence_score", result.data.confidence);
-      await logScore(span, "signal_count", result.data.key_signals.length);
-
-      end({
-        model: result.model,
-        latencyMs: result.latencyMs,
-        tokens: result.usage,
-        output: result.data,
-      });
-
-      return result.data;
-    } catch (error) {
-      lastError = error;
-      await logScore(span, "structured_output_valid", 0);
-      await logError(span, error);
-    }
+    return result.data;
+  } catch (error) {
+    await logScore(span, "structured_output_valid", 0);
+    await logError(span, error);
+    end({ error: error instanceof Error ? error.message : String(error) });
+    throw error;
   }
-
-  end({ error: lastError instanceof Error ? lastError.message : String(lastError) });
-  throw lastError instanceof Error
-    ? lastError
-    : new Error(`Market Data Agent failed after ${MAX_RETRIES} attempts`);
 }

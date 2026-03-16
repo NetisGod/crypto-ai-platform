@@ -5,22 +5,18 @@
  * themes, drivers, and source attribution. Runs as a child span under
  * the parent LangGraph workflow trace in Langfuse.
  *
- * Uses the shared AI client (callStructuredJson) for LLM execution and Zod
- * validation. Includes retry logic aligned with the shared workflow runner.
+ * Uses the AI Runner (runAIStructured) for LLM execution — model selection
+ * is delegated to the Model Router.
  */
 
-import { callStructuredJson } from "@/lib/ai-client";
+import { runAIStructured } from "@/ai/runner/runAI";
 import { logScore, logError, type LangfuseTrace } from "@/lib/langfuse";
 import {
   type NewsRow,
   type NewsAnalysis,
   NewsAnalysisSchema,
   createAgentSpan,
-  AGENT_MODEL,
 } from "./types";
-
-const MAX_RETRIES = 2;
-const FALLBACK_MODEL = "gpt-4.1-nano";
 
 const SYSTEM_PROMPT = `You are a senior crypto news analyst at a digital-asset intelligence desk.
 
@@ -144,42 +140,30 @@ export async function runNewsAgent(
     sources: [...new Set(news.map((n) => n.source))],
   });
 
-  let lastError: unknown = null;
+  try {
+    const result = await runAIStructured(
+      "extraction",
+      buildUserPrompt(news),
+      NewsAnalysisSchema,
+      { systemPrompt: SYSTEM_PROMPT },
+    );
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const model = attempt === 0 ? AGENT_MODEL : FALLBACK_MODEL;
+    await logScore(span, "structured_output_valid", 1);
+    await logScore(span, "confidence_score", result.data.confidence);
+    await logScore(span, "driver_count", result.data.main_drivers.length);
 
-    try {
-      const result = await callStructuredJson<NewsAnalysis>({
-        model,
-        systemPrompt: SYSTEM_PROMPT,
-        userPrompt: buildUserPrompt(news),
-        schema: NewsAnalysisSchema,
-        trace: span,
-        temperature: 0.2,
-      });
+    end({
+      model: result.model,
+      latencyMs: result.latencyMs,
+      tokens: { promptTokens: result.promptTokens, completionTokens: result.completionTokens },
+      output: result.data,
+    });
 
-      await logScore(span, "structured_output_valid", 1);
-      await logScore(span, "confidence_score", result.data.confidence);
-      await logScore(span, "driver_count", result.data.main_drivers.length);
-
-      end({
-        model: result.model,
-        latencyMs: result.latencyMs,
-        tokens: result.usage,
-        output: result.data,
-      });
-
-      return result.data;
-    } catch (error) {
-      lastError = error;
-      await logScore(span, "structured_output_valid", 0);
-      await logError(span, error);
-    }
+    return result.data;
+  } catch (error) {
+    await logScore(span, "structured_output_valid", 0);
+    await logError(span, error);
+    end({ error: error instanceof Error ? error.message : String(error) });
+    throw error;
   }
-
-  end({ error: lastError instanceof Error ? lastError.message : String(lastError) });
-  throw lastError instanceof Error
-    ? lastError
-    : new Error(`News Agent failed after ${MAX_RETRIES} attempts`);
 }

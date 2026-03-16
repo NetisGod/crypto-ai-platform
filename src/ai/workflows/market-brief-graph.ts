@@ -40,8 +40,10 @@ import {
   type NewsRow,
   type NarrativeRow,
   type SynthesizedBrief,
-  AGENT_MODEL,
+  type MarketBriefDebugPayload,
 } from "../agents/types";
+
+const PIPELINE_MODEL_LABEL = "router-managed";
 import { runMarketDataAgent } from "../agents/market-data-agent";
 import { runNewsAgent } from "../agents/news-agent";
 import { runNarrativeAgent } from "../agents/narrative-agent";
@@ -265,7 +267,7 @@ export interface MarketBriefPipelineResult {
   model: string;
   latencyMs: number;
   aiRunId: string | null;
-  debugJson: Record<string, unknown>;
+  debugJson: MarketBriefDebugPayload;
 }
 
 export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResult> {
@@ -274,7 +276,7 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
   // --- Parent Langfuse trace for the entire pipeline ---
   const trace: LangfuseTrace | null = startTrace(
     WORKFLOW_NAME,
-    { pipeline: "multi_agent", model: AGENT_MODEL },
+    { pipeline: "multi_agent", model: PIPELINE_MODEL_LABEL },
     { triggered_at: new Date().toISOString() },
   );
 
@@ -337,9 +339,9 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
       finalState.newsAnalysis && "news",
       finalState.narrativeAnalysis && "narrative",
       finalState.riskAnalysis && "risk",
-    ].filter(Boolean);
+    ].filter((v): v is string => Boolean(v));
 
-    const debugJson: Record<string, unknown> = {
+    const debugJson: MarketBriefDebugPayload = {
       marketDataAnalysis: finalState.marketDataAnalysis ?? null,
       newsAnalysis: finalState.newsAnalysis ?? null,
       narrativeAnalysis: finalState.narrativeAnalysis ?? null,
@@ -355,7 +357,7 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
       meta: {
         latencyMs,
         agentCoverage,
-        model: AGENT_MODEL,
+        model: PIPELINE_MODEL_LABEL,
         snapshotCount: (finalState.snapshots ?? []).length,
         newsCount: (finalState.news ?? []).length,
       },
@@ -372,7 +374,7 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
     await db.from("market_briefs").insert({
       content: JSON.stringify({
         brief: finalBrief,
-        model: AGENT_MODEL,
+        model: PIPELINE_MODEL_LABEL,
         context: {
           snapshots_count: (finalState.snapshots ?? []).length,
           news_count: (finalState.news ?? []).length,
@@ -389,7 +391,7 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
           status: "completed",
           output_snapshot: {
             workflow_name: WORKFLOW_NAME,
-            model: AGENT_MODEL,
+            model: PIPELINE_MODEL_LABEL,
             latency_ms: latencyMs,
             agent_coverage: agentCoverage,
             brief: finalBrief,
@@ -400,7 +402,7 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
         .eq("id", aiRunId);
     }
 
-    return { brief: finalBrief, model: AGENT_MODEL, latencyMs, aiRunId, debugJson };
+    return { brief: finalBrief, model: PIPELINE_MODEL_LABEL, latencyMs, aiRunId, debugJson };
   } catch (error) {
     const latencyMs = Date.now() - pipelineStart;
     await markAiRunFailed(

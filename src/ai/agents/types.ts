@@ -84,6 +84,57 @@ export const ValidationResultSchema = z.object({
 export type ValidationResult = z.infer<typeof ValidationResultSchema>;
 
 // ---------------------------------------------------------------------------
+// Agent task types (mirrors router TaskType for use in agent-layer code)
+// ---------------------------------------------------------------------------
+
+export type AgentTaskType =
+  | "classification"
+  | "extraction"
+  | "reasoning"
+  | "synthesis"
+  | "validation";
+
+// ---------------------------------------------------------------------------
+// AI execution metadata (captured by the runner for observability / debug)
+// ---------------------------------------------------------------------------
+
+export interface AIExecutionMetadata {
+  task: AgentTaskType | string;
+  model: string;
+  provider: string;
+  temperature: number;
+  maxTokens: number;
+  inputTokens: number;
+  outputTokens: number;
+  latencyMs: number;
+  retryCount: number;
+}
+
+// ---------------------------------------------------------------------------
+// Debug payload for the Multi-Agent Market Brief (stored as debug_json)
+// ---------------------------------------------------------------------------
+
+export interface MarketBriefDebugPayload {
+  marketDataAnalysis: MarketDataAnalysis | null;
+  newsAnalysis: NewsAnalysis | null;
+  narrativeAnalysis: NarrativeAnalysis | null;
+  riskAnalysis: RiskAnalysis | null;
+  synthesizedBrief: SynthesizedBrief | null;
+  validationResult: {
+    valid: boolean;
+    issues: string[];
+  } | null;
+  issues: string[];
+  meta: {
+    latencyMs: number;
+    agentCoverage: string[];
+    model: string;
+    snapshotCount: number;
+    newsCount: number;
+  };
+}
+
+// ---------------------------------------------------------------------------
 // LangGraph state annotation
 // ---------------------------------------------------------------------------
 
@@ -112,7 +163,7 @@ export type MarketBriefState = typeof MarketBriefGraphState.State;
 export type MarketBriefUpdate = typeof MarketBriefGraphState.Update;
 
 // ---------------------------------------------------------------------------
-// Langfuse span helper — wraps a child span as a LangfuseTrace for callStructuredJson
+// Langfuse span helper — wraps a child span as a LangfuseTrace for agents
 // ---------------------------------------------------------------------------
 
 export function createAgentSpan(
@@ -133,4 +184,3 @@ export function createAgentSpan(
   };
 }
 
-export const AGENT_MODEL = "gpt-4.1-mini";
