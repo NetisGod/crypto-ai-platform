@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { MarketChartCard } from "@/components/dashboard/market-chart-card";
 import { NewsFeed } from "@/components/dashboard/news-feed";
+import { MarketNews } from "@/components/dashboard/MarketNews";
 import { AiMarketBriefCard } from "@/components/dashboard/ai-market-brief-card";
 import { useMarketPrices } from "@/hooks/use-market-prices";
 import { formatCompactNum } from "@/data/mock-data";
@@ -130,7 +131,7 @@ export default function DashboardPage() {
             onRangeChange={setSelectedRange}
           />
         </div>
-        <NewsFeed items={news} maxHeight="280px" />
+        <MarketNews />
       </div>
 
       <Card>
