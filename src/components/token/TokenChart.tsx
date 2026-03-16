@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -13,10 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMarketChart } from "@/hooks/use-market-chart";
-import { useState } from "react";
 import type { AssetSymbol, TimeRange } from "@/services/market/types";
-
-const ASSETS: AssetSymbol[] = ["BTC", "ETH"];
 
 const TIME_RANGES: { label: string; value: TimeRange }[] = [
   { label: "1 Day", value: "1D" },
@@ -26,11 +24,8 @@ const TIME_RANGES: { label: string; value: TimeRange }[] = [
   { label: "All", value: "ALL" },
 ];
 
-interface MarketChartCardProps {
-  asset?: AssetSymbol;
-  range?: TimeRange;
-  onAssetChange?: (asset: AssetSymbol) => void;
-  onRangeChange?: (range: TimeRange) => void;
+interface TokenChartProps {
+  symbol: string;
   className?: string;
 }
 
@@ -64,69 +59,49 @@ function ChartSkeleton() {
   );
 }
 
-export function MarketChartCard({
-  asset: assetProp,
-  range: rangeProp,
-  onAssetChange,
-  onRangeChange,
-  className,
-}: MarketChartCardProps) {
-  const [internalAsset, setInternalAsset] = useState<AssetSymbol>(assetProp ?? "BTC");
-  const [internalRange, setInternalRange] = useState<TimeRange>(rangeProp ?? "1D");
+function getTickInterval(dataLength: number, range: TimeRange): number {
+  if (dataLength <= 10) return 0;
+  switch (range) {
+    case "1D":
+      return Math.max(Math.floor(dataLength / 8), 1);
+    case "1W":
+      return Math.max(Math.floor(dataLength / 7), 1);
+    case "1M":
+      return Math.max(Math.floor(dataLength / 8), 1);
+    case "1Y":
+      return Math.max(Math.floor(dataLength / 12), 1);
+    case "ALL":
+      return Math.max(Math.floor(dataLength / 10), 1);
+  }
+}
 
-  const asset = assetProp ?? internalAsset;
-  const range = rangeProp ?? internalRange;
-
-  const handleAssetChange = (a: AssetSymbol) => {
-    setInternalAsset(a);
-    onAssetChange?.(a);
-  };
-
-  const handleRangeChange = (r: TimeRange) => {
-    setInternalRange(r);
-    onRangeChange?.(r);
-  };
-
+export function TokenChart({ symbol, className }: TokenChartProps) {
+  const [range, setRange] = useState<TimeRange>("1D");
+  const asset = symbol as AssetSymbol;
   const { data, loading, error } = useMarketChart(asset, range);
 
   const tickInterval = getTickInterval(data.length, range);
+  const gradientId = `tokenChartGradient-${symbol}`;
 
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="space-y-3 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {ASSETS.map((a) => (
-              <button
-                key={a}
-                onClick={() => handleAssetChange(a)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
-                  asset === a
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1">
-            {TIME_RANGES.map(({ label, value }) => (
-              <Button
-                key={value}
-                size="sm"
-                variant={range === value ? "default" : "ghost"}
-                className={cn(
-                  "h-7 px-2.5 text-xs",
-                  range === value && "pointer-events-none"
-                )}
-                onClick={() => handleRangeChange(value)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-base font-medium">{symbol} Price</CardTitle>
+        <div className="flex gap-1">
+          {TIME_RANGES.map(({ label, value }) => (
+            <Button
+              key={value}
+              size="sm"
+              variant={range === value ? "default" : "ghost"}
+              className={cn(
+                "h-7 px-2.5 text-xs",
+                range === value && "pointer-events-none"
+              )}
+              onClick={() => setRange(value)}
+            >
+              {label}
+            </Button>
+          ))}
         </div>
       </CardHeader>
       <CardContent>
@@ -149,13 +124,7 @@ export function MarketChartCard({
                 margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient
-                    id="marketChartGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="0%"
                       stopColor="hsl(var(--primary))"
@@ -208,7 +177,7 @@ export function MarketChartCard({
                   dataKey="value"
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
-                  fill="url(#marketChartGradient)"
+                  fill={`url(#${gradientId})`}
                   animationDuration={600}
                 />
               </AreaChart>
@@ -218,20 +187,4 @@ export function MarketChartCard({
       </CardContent>
     </Card>
   );
-}
-
-function getTickInterval(dataLength: number, range: TimeRange): number {
-  if (dataLength <= 10) return 0;
-  switch (range) {
-    case "1D":
-      return Math.max(Math.floor(dataLength / 8), 1);
-    case "1W":
-      return Math.max(Math.floor(dataLength / 7), 1);
-    case "1M":
-      return Math.max(Math.floor(dataLength / 8), 1);
-    case "1Y":
-      return Math.max(Math.floor(dataLength / 12), 1);
-    case "ALL":
-      return Math.max(Math.floor(dataLength / 10), 1);
-  }
 }

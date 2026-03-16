@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { LucideIcon, TrendingUp, TrendingDown, ChevronRight } from "lucide-react";
 
 export interface MetricCardProps {
   title: string;
@@ -14,6 +15,7 @@ export interface MetricCardProps {
   variant?: "default" | "accent";
   selected?: boolean;
   onClick?: () => void;
+  href?: string;
   loading?: boolean;
 }
 
@@ -27,17 +29,19 @@ export function MetricCard({
   variant = "default",
   selected,
   onClick,
+  href,
   loading,
 }: MetricCardProps) {
   const positive = change !== undefined && change >= 0;
 
-  return (
+  const card = (
     <Card
       className={cn(
         "transition-colors hover:border-border/80",
         variant === "accent" && "border-primary/30 glow-accent",
         selected && "ring-2 ring-primary/60 border-primary/50",
-        onClick && "cursor-pointer",
+        (onClick || href) && "cursor-pointer",
+        href && "group hover:border-primary/30",
         className
       )}
       onClick={onClick}
@@ -46,9 +50,11 @@ export function MetricCard({
         <span className="text-sm font-medium text-muted-foreground">
           {title}
         </span>
-        {Icon && (
+        {href ? (
+          <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        ) : Icon ? (
           <Icon className="h-4 w-4 text-muted-foreground" />
-        )}
+        ) : null}
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -87,4 +93,14 @@ export function MetricCard({
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }

@@ -5,34 +5,22 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { MarketChartCard } from "@/components/dashboard/market-chart-card";
-import { NewsFeed } from "@/components/dashboard/news-feed";
 import { MarketNews } from "@/components/dashboard/MarketNews";
 import { AiMarketBriefCard } from "@/components/dashboard/ai-market-brief-card";
 import { useMarketPrices } from "@/hooks/use-market-prices";
 import { formatCompactNum } from "@/data/mock-data";
-import type { TokenSummary, NewsItem } from "@/data/mock-data";
-import type { AssetSymbol, TimeRange } from "@/services/market/types";
-import { TrendingUp, DollarSign, BarChart3 } from "lucide-react";
+import type { TokenSummary } from "@/data/mock-data";
+import { TrendingUp, DollarSign, BarChart3, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MOCK_TOKENS, MOCK_NEWS } from "@/data/mock-data";
+import { MOCK_TOKENS } from "@/data/mock-data";
 
 type DashboardData = {
   tokens: TokenSummary[];
-  news: NewsItem[];
 };
-
-function isBinanceAsset(symbol: string): symbol is AssetSymbol {
-  return symbol === "BTC" || symbol === "ETH";
-}
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const { prices, loading: pricesLoading } = useMarketPrices();
-
-  const [selectedAsset, setSelectedAsset] = useState<AssetSymbol>("BTC");
-  const [selectedRange, setSelectedRange] = useState<TimeRange>("1D");
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -41,13 +29,11 @@ export default function DashboardPage() {
       .catch(() =>
         setData({
           tokens: MOCK_TOKENS,
-          news: MOCK_NEWS,
         })
       );
   }, []);
 
   const tokens = data?.tokens ?? MOCK_TOKENS;
-  const news = data?.news ?? MOCK_NEWS;
 
   const liveBtc = prices.find((p) => p.symbol === "BTC");
   const liveEth = prices.find((p) => p.symbol === "ETH");
@@ -91,8 +77,7 @@ export default function DashboardPage() {
           changeLabel="24h"
           icon={DollarSign}
           variant="accent"
-          selected={selectedAsset === "BTC"}
-          onClick={() => setSelectedAsset("BTC")}
+          href="/token/BTC"
           loading={pricesLoading && !liveBtc}
         />
         <MetricCard
@@ -101,8 +86,7 @@ export default function DashboardPage() {
           change={ethChange}
           changeLabel="24h"
           icon={TrendingUp}
-          selected={selectedAsset === "ETH"}
-          onClick={() => setSelectedAsset("ETH")}
+          href="/token/ETH"
           loading={pricesLoading && !liveEth}
         />
         <MetricCard
@@ -125,11 +109,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <MarketChartCard
-            asset={selectedAsset}
-            range={selectedRange}
-            onRangeChange={setSelectedRange}
-          />
+          <MarketChartCard />
         </div>
         <MarketNews />
       </div>
@@ -145,61 +125,30 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
-            {topMovers.map((token) => {
-              const sym = token.symbol;
-              return isBinanceAsset(sym) ? (
-                <button
-                  key={sym}
-                  onClick={() => setSelectedAsset(sym)}
-                  className={cn(
-                    "flex min-w-[140px] items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors",
-                    selectedAsset === sym
-                      ? "border-primary/50 bg-muted/50 ring-2 ring-primary/60"
-                      : "border-border bg-muted/30 hover:border-primary/30 hover:bg-muted/50"
-                  )}
-                >
-                  <div>
-                    <p className="font-semibold">{sym}</p>
-                    <p
-                      className={
-                        token.change24h >= 0
-                          ? "text-sm text-emerald-500"
-                          : "text-sm text-red-500"
-                      }
-                    >
-                      {token.change24h >= 0 ? "+" : ""}
-                      {token.change24h.toFixed(2)}%
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    ${token.price.toLocaleString()}
+            {topMovers.map((token) => (
+              <Link
+                key={token.symbol}
+                href={`/token/${token.symbol}`}
+                className="flex min-w-[140px] items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+              >
+                <div>
+                  <p className="font-semibold">{token.symbol}</p>
+                  <p
+                    className={
+                      token.change24h >= 0
+                        ? "text-sm text-emerald-500"
+                        : "text-sm text-red-500"
+                    }
+                  >
+                    {token.change24h >= 0 ? "+" : ""}
+                    {token.change24h.toFixed(2)}%
                   </p>
-                </button>
-              ) : (
-                <Link
-                  key={sym}
-                  href={`/token/${sym}`}
-                  className="flex min-w-[140px] items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
-                >
-                  <div>
-                    <p className="font-semibold">{sym}</p>
-                    <p
-                      className={
-                        token.change24h >= 0
-                          ? "text-sm text-emerald-500"
-                          : "text-sm text-red-500"
-                      }
-                    >
-                      {token.change24h >= 0 ? "+" : ""}
-                      {token.change24h.toFixed(2)}%
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    ${token.price.toLocaleString()}
-                  </p>
-                </Link>
-              );
-            })}
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  ${token.price.toLocaleString()}
+                </p>
+              </Link>
+            ))}
           </div>
         </CardContent>
       </Card>
