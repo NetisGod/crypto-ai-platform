@@ -14,6 +14,7 @@
 | `narratives` | AI-detected market narratives |
 | `narrative_news` | Many-to-many: narratives ↔ news items |
 | `market_briefs` | Cached AI market brief outputs |
+| `narrative_snapshots` | Cached AI narrative analysis snapshots |
 | `ai_runs` | Observability: all AI workflow runs |
 | `eval_runs` | Evaluation: golden-set eval results |
 
@@ -197,6 +198,58 @@ type DebugJson = {
 
 ---
 
+### `narrative_snapshots`
+Cached AI narrative analysis snapshots from the Narratives feature.
+
+Mirrors `market_briefs` structure: `content` as text (JSON string), `debug_json` as JSONB.
+
+```sql
+CREATE TABLE narrative_snapshots (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content        TEXT NOT NULL,              -- JSON: { narratives, updatedAt, model }
+  debug_json     JSONB,                      -- full pipeline diagnostics
+  generated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_narrative_snapshots_generated_at
+  ON narrative_snapshots(generated_at DESC);
+```
+
+**`content` shape** (JSON string):
+```typescript
+type StoredContent = {
+  narratives: NarrativeItem[]
+  updatedAt: string
+  model: string
+}
+```
+
+**`debug_json` shape**:
+```typescript
+type DebugJson = {
+  candidates: NarrativeCandidate[]
+  aiOutput: NarrativesAIOutput
+  meta: {
+    tokenCount: number
+    taxonomyTokenCount: number
+    avgDataCoverage: number
+    candidateCount: number
+    candidatesSentToAI: number
+    newsCount: number
+    model: string
+    latencyMs: number
+    aiFallback: boolean
+  }
+}
+```
+
+**Migration**: `supabase/migrations/20260317000001_add_narrative_snapshots.sql`
+
+**API**: `GET /api/ai/narratives` reads latest row; `POST /api/ai/narratives` generates and inserts.
+
+---
+
 ### `ai_runs`
 Observability table — persists every AI workflow execution.
 
@@ -244,6 +297,7 @@ CREATE TABLE eval_runs (
 assets ──────────────── 1:many ──── market_snapshots
 narratives ─────────── many:many ── news_items  (via narrative_news)
 market_briefs ─────── standalone (workflow output)
+narrative_snapshots ─ standalone (workflow output)
 ai_runs ───────────── standalone (observability)
 eval_runs ─────────── standalone (evaluation)
 ```
@@ -258,6 +312,7 @@ eval_runs ─────────── standalone (evaluation)
 | `news_items` | `url` | UNIQUE | Dedup on ingest |
 | `news_items` | `embedding` | HNSW cosine | RAG vector search |
 | `narrative_news` | `(narrative_id, news_id)` | PRIMARY KEY | Junction dedup |
+| `narrative_snapshots` | `generated_at` | DESC | Latest snapshot lookup |
 
 ---
 

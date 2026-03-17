@@ -31,20 +31,20 @@ It must answer using **platform context** assembled from internal layers:
 - narratives (planned integration point)
 - shared AI runner + model router
 
-According to the current project docs, Ask AI is a **planned** feature with:
+Ask AI is implemented with:
 
 - product route: `/ask`
 - API route: `POST /api/ai/ask`
-- dependencies: market data, news, narratives, AI runner
+- dependencies: market data, news, AI runner, model router
 
 ---
 
 ## Status
 
-- **Feature status:** Planned
+- **Feature status:** Completed
 - **Product route:** `/ask`
 - **API route:** `POST /api/ai/ask`
-- **Priority:** Core AI surface after dashboard/token AI foundations
+- **Implementation:** Rule-based intent detection, context assembly from market data + news, AI via shared runner (`runAIStructured` / `runAI` fallback), Zod-validated response, UI with example chips and structured answer rendering. Narratives integration point typed and ready for future use.
 
 ---
 

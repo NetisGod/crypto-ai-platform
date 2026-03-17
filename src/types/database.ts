@@ -122,6 +122,22 @@ export interface MarketBriefInsert {
   created_at?: string;
 }
 
+export interface NarrativeSnapshot {
+  id: string;
+  content: string;
+  debug_json: Record<string, unknown> | null;
+  generated_at: string;
+  created_at: string;
+}
+
+export interface NarrativeSnapshotInsert {
+  id?: string;
+  content: string;
+  debug_json?: Record<string, unknown> | null;
+  generated_at?: string;
+  created_at?: string;
+}
+
 export interface AiRun {
   id: string;
   run_type: string;
@@ -193,6 +209,11 @@ export interface Database {
         Row: MarketBrief;
         Insert: MarketBriefInsert;
         Update: Partial<MarketBriefInsert>;
+      };
+      narrative_snapshots: {
+        Row: NarrativeSnapshot;
+        Insert: NarrativeSnapshotInsert;
+        Update: Partial<NarrativeSnapshotInsert>;
       };
       ai_runs: {
         Row: AiRun;

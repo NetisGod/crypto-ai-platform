@@ -66,16 +66,17 @@
 - **Dependencies:** market data, news, DB, Langfuse
 
 ### 10. Ask AI
-- **Status:** Planned
-- **Description:** Market Q&A interface
+- **Status:** Completed
+- **Description:** Market Q&A interface — rule-based intent detection, context assembly from live market data and news, AI answer generation via shared runner, structured Zod-validated response rendered in UI
 - **Where:** `/ask`
-- **Dependencies:** market data, news, narratives, AI runner
+- **Dependencies:** market data, news, AI runner, model router, Langfuse (hook point)
 
 ### 11. Narratives Page
-- **Status:** Planned
-- **Description:** Display active narratives and linked news
+- **Status:** Completed
+- **Description:** Deterministic narrative detection + AI explanation layer. Static token taxonomy, composite scoring (performance / breadth / mover presence), AI summarization via shared runner with three-tier fallback, Zod-validated output, persisted to `narrative_snapshots`, Langfuse-traced. Detail drawer, data coverage handling, `ai_runs` integration.
 - **Where:** `/narratives`
-- **Dependencies:** news, narrative workflow, DB
+- **Dependencies:** market data (Binance + Supabase snapshots), news service, AI runner, model router, Langfuse, Supabase
+- **Architecture doc:** `docs/features/narratives-feature-architecture.md`
 
 ### 12. Monitoring Page
 - **Status:** Planned
@@ -94,13 +95,13 @@
 ## Phase 3 — Advanced AI Engineering
 
 ### 14. Multi-Agent Market Brief
-- **Status:** In Progress architecturally
+- **Status:** Completed
 - **Description:** LangGraph-based multi-agent Market Brief
 - **Where:** `/dashboard`
 - **Dependencies:** market data, news, narratives, AI runner, LangGraph
 
 ### 15. “How this brief was built” Drawer
-- **Status:** Planned
+- **Status:** Completed
 - **Description:** Show internal Market Brief agent outputs
 - **Where:** dashboard Market Brief block
 - **Dependencies:** debug_json
@@ -163,9 +164,9 @@
 
 ### 24. Narrative Intelligence Studio
 - **Status:** Planned
-- **Description:** Richer narrative timeline and evidence UI
+- **Description:** Richer narrative timeline, historical comparison, evidence UI, `peaking` status inference
 - **Where:** `/narratives`
-- **Dependencies:** narrative layer
+- **Dependencies:** Narratives Page (completed), snapshot history, RAG retrieval layer
 
 ### 25. Explain This Move
 - **Status:** Planned
@@ -204,3 +205,4 @@
 18. Voice / Regime / other advanced product features
 
 ## Current next feature
+12. Monitoring Page
