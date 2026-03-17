@@ -378,4 +378,10 @@ When implementing features:
 5. maintain logging and observability
 6. avoid architectural changes without reason
 
+Always read /docs before generating code.
+Use architecture.md and roadmap.md as the source of truth.
+Never introduce Playwright in future steps.
+All AI calls must go through Model Router.
+Langfuse must wrap every AI call.
+
 This document is the **system architecture reference** for all future development.
