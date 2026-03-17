@@ -5,6 +5,7 @@ import { TokenHeader } from "@/components/token/TokenHeader";
 import { TokenChart } from "@/components/token/TokenChart";
 import { TokenStats } from "@/components/token/TokenStats";
 import { TokenNews } from "@/components/token/TokenNews";
+import { TokenAnalysisCard } from "@/components/token/TokenAnalysisCard";
 import { TokenUnsupportedFallback } from "@/components/token/TokenUnsupportedFallback";
 
 const SUPPORTED_SYMBOLS = new Set<string>(["BTC", "ETH"]);
@@ -55,6 +56,8 @@ export default async function TokenPage({
         </div>
         <TokenStats symbol={upper} />
       </div>
+
+      <TokenAnalysisCard symbol={upper} />
 
       <TokenNews symbol={upper} />
     </div>

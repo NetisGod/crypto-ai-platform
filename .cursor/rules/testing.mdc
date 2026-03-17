@@ -1,0 +1,43 @@
+---
+description: Playwright end-to-end testing standards for all features
+globs: tests/e2e/**/*.spec.ts, e2e/**/*.spec.ts
+alwaysApply: true
+---
+
+# Testing Rule — Playwright
+
+All new features must include Playwright end-to-end tests.
+
+## Rules
+
+1. Every feature must include at least one Playwright test.
+
+2. Tests must verify:
+   - UI renders correctly
+   - navigation works
+   - API responses display in UI
+   - no runtime errors occur
+
+3. Tests must be placed in:
+   `tests/e2e/`
+
+4. Test naming convention:
+   `feature-name.spec.ts`
+
+   Examples:
+   - `dashboard.spec.ts`
+   - `token-pages.spec.ts`
+   - `market-brief.spec.ts`
+
+5. Tests must use stable selectors:
+   - `data-testid`
+   - role selectors
+   - accessible text
+
+6. After implementing a feature:
+   - run Playwright tests
+   - fix failing tests before finishing the task
+
+7. Never skip tests unless explicitly instructed.
+
+**Goal:** Maintain stable UI flows and prevent regressions.

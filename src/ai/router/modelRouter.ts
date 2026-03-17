@@ -81,13 +81,13 @@ const TASK_ROUTE_TABLE: Record<TaskType, ModelConfig> = {
     provider: "openrouter",
     model: "gpt-4.1",
     temperature: 0.3,
-    maxTokens: 4096,
+    maxTokens: 1536,
   },
   synthesis: {
     provider: "openrouter",
     model: "gpt-4.1",
     temperature: 0.4,
-    maxTokens: 4096,
+    maxTokens: 1536,
   },
   validation: {
     provider: "openrouter",
