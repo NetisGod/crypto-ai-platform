@@ -145,23 +145,8 @@ See: `specs/07-token-pages.md` and `specs/08-ai-token-analysis.md`
 
 ---
 
-## Completed Features
-
-- [x] Market Data Layer (Binance)
-- [x] Dashboard KPI Cards
-- [x] Chart System
-- [x] Top Movers
-- [x] Model Router
-- [x] Market News Layer / Panel
-
-## In Progress
-
-- [ ] Token Pages
-- [ ] AI Market Brief (multi-agent stabilization)
-
 ## Planned
 
-- [ ] AI Token Analysis
 - [ ] Ask AI
 - [ ] Narratives Page
 - [ ] Monitoring Page
