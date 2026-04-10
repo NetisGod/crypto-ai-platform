@@ -87,6 +87,7 @@ async function loadContextFromDb(): Promise<{
   const { data: assetRows } = await (db
     .from("assets")
     .select("id, symbol, name")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .in("symbol", ["BTC", "ETH", "SOL"]) as any);
 
   const assets =
@@ -103,6 +104,7 @@ async function loadContextFromDb(): Promise<{
       "asset_id, price, volume_24h, market_cap, funding_rate, open_interest, snapshot_at",
     )
     .in("asset_id", assetIds)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .order("snapshot_at", { ascending: false }) as any);
 
   const snapshotsByAsset = new Map<string, SnapshotRow>();
@@ -136,6 +138,7 @@ async function loadContextFromDb(): Promise<{
     .from("news_items")
     .select("title, source, summary, url, published_at")
     .order("published_at", { ascending: false })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .limit(20) as any);
 
   const news = (newsRows as NewsRow[] | null) ?? [];

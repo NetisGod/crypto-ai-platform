@@ -59,9 +59,10 @@ export async function generateAndStoreEmbedding(
   const text = buildNewsText(title, summary);
   const embedding = await embedText(text);
   const db = getDb();
-  const { error } = await db
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (db as any)
     .from("news_items")
-    .update({ embedding } as { embedding: number[] })
+    .update({ embedding })
     .eq("id", id);
   if (error) {
     return { error: error.message };

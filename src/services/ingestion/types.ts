@@ -43,3 +43,48 @@ export interface IngestionResult<T> {
   error?: string;
   durationMs: number;
 }
+
+/** Options for the ingestion orchestrator. */
+export interface IngestionOptions {
+  trigger: "manual" | "cron" | "pre_pipeline";
+  skipPrices?: boolean;
+  skipNews?: boolean;
+  skipFunding?: boolean;
+  skipEmbeddings?: boolean;
+}
+
+/** Per-source result stored in ingestion_runs JSONB columns. */
+export interface SourceResult {
+  count: number;
+  source: string;
+  duration_ms: number;
+  error?: string;
+}
+
+/** Full record written to ingestion_runs after pipeline completes. */
+export interface IngestionRunRecord {
+  id: string;
+  started_at: string;
+  completed_at: string;
+  status: "completed" | "partial" | "failed";
+  prices: SourceResult | null;
+  funding: SourceResult | null;
+  news: SourceResult | null;
+  embeddings: SourceResult | null;
+  trigger: string;
+}
+
+/** Configuration for text chunking. */
+export interface ChunkConfig {
+  chunkSize: number;
+  chunkOverlap: number;
+  minChunkSize: number;
+  separators: string[];
+}
+
+/** A text chunk ready for embedding. */
+export interface TextChunk {
+  content: string;
+  chunkIndex: number;
+  tokenCount: number;
+}

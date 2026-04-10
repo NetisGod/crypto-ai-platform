@@ -180,6 +180,57 @@ export interface EvalRunInsert {
   created_at?: string;
 }
 
+export type IngestionRunStatus = "running" | "completed" | "partial" | "failed";
+export type IngestionTrigger = "manual" | "cron" | "pre_pipeline";
+
+export interface IngestionRun {
+  id: string;
+  started_at: string;
+  completed_at: string | null;
+  status: IngestionRunStatus;
+  prices: Record<string, unknown> | null;
+  funding: Record<string, unknown> | null;
+  news: Record<string, unknown> | null;
+  embeddings: Record<string, unknown> | null;
+  trigger: IngestionTrigger;
+}
+
+export interface IngestionRunInsert {
+  id?: string;
+  started_at?: string;
+  completed_at?: string | null;
+  status?: IngestionRunStatus;
+  prices?: Record<string, unknown> | null;
+  funding?: Record<string, unknown> | null;
+  news?: Record<string, unknown> | null;
+  embeddings?: Record<string, unknown> | null;
+  trigger?: IngestionTrigger;
+}
+
+export interface DocumentChunk {
+  id: string;
+  source_table: string;
+  source_id: string;
+  chunk_index: number;
+  content: string;
+  token_count: number | null;
+  embedding: number[] | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface DocumentChunkInsert {
+  id?: string;
+  source_table: string;
+  source_id: string;
+  chunk_index?: number;
+  content: string;
+  token_count?: number | null;
+  embedding?: number[] | null;
+  metadata?: Record<string, unknown>;
+  created_at?: string;
+}
+
 /** Supabase Database schema type for typed client (optional). */
 export interface Database {
   public: {
@@ -224,6 +275,16 @@ export interface Database {
         Row: EvalRun;
         Insert: EvalRunInsert;
         Update: Partial<EvalRunInsert>;
+      };
+      ingestion_runs: {
+        Row: IngestionRun;
+        Insert: IngestionRunInsert;
+        Update: Partial<IngestionRunInsert>;
+      };
+      document_chunks: {
+        Row: DocumentChunk;
+        Insert: DocumentChunkInsert;
+        Update: Partial<DocumentChunkInsert>;
       };
     };
   };

@@ -1,18 +1,24 @@
 /**
  * Persist normalized ingestion data into Supabase.
- * Uses getDb() - call from API routes or server context.
+ * Uses batch operations to minimize round-trips within Vercel's timeout.
  */
 
 import { getDb } from "@/lib/db";
-import type { NormalizedPrice, NormalizedFunding, NormalizedNewsItem } from "./types";
-import type { AssetInsert, MarketSnapshotInsert, NewsItemInsert } from "@/types/database";
+import type { NormalizedPrice, NormalizedFunding, NormalizedNewsItem, SourceResult } from "./types";
+import type {
+  MarketSnapshotInsert,
+  IngestionRunInsert,
+  DocumentChunkInsert,
+} from "@/types/database";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const log = (msg: string, meta?: Record<string, unknown>) => {
   const line = meta ? `${msg} ${JSON.stringify(meta)}` : msg;
   console.log(`[ingestion/store] ${line}`);
 };
 
-/** Upsert assets by symbol; return map symbol -> id. */
+/** Upsert assets by symbol in a single batch; return map symbol -> id. */
 export async function upsertAssets(
   items: { symbol: string; name: string }[]
 ): Promise<Map<string, string>> {
@@ -20,34 +26,33 @@ export async function upsertAssets(
   const symbolToId = new Map<string, string>();
   const unique = Array.from(new Map(items.map((i) => [i.symbol, i])).values());
 
-  for (const item of unique) {
-    const insert: AssetInsert = { symbol: item.symbol, name: item.name };
-    const { data, error } = await db
-      .from("assets")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .upsert(insert as any, { onConflict: "symbol", ignoreDuplicates: false })
-      .select("id, symbol")
-      .single();
+  const rows = unique.map((i) => ({ symbol: i.symbol, name: i.name }));
+  const { data, error } = await (db as any)
+    .from("assets")
+    .upsert(rows, { onConflict: "symbol", ignoreDuplicates: false })
+    .select("id, symbol");
 
-    if (error) {
-      const { data: existingRow } = await db
-        .from("assets")
-        .select("id")
-        .eq("symbol", item.symbol)
-        .maybeSingle();
-      const existing = existingRow as { id: string } | null;
-      if (existing?.id) symbolToId.set(item.symbol, existing.id);
-      log("upsertAssets row error", { symbol: item.symbol, error: error.message });
-      continue;
+  if (error) {
+    log("upsertAssets batch error, falling back to select", { error: error.message });
+    const { data: existing } = await (db as any)
+      .from("assets")
+      .select("id, symbol")
+      .in("symbol", unique.map((i) => i.symbol));
+    if (existing) {
+      for (const row of existing as { id: string; symbol: string }[]) {
+        symbolToId.set(row.symbol, row.id);
+      }
     }
-    const row = data as { id: string; symbol: string } | null;
-    if (row?.id) symbolToId.set(row.symbol, row.id);
+    return symbolToId;
   }
 
+  for (const row of (data ?? []) as { id: string; symbol: string }[]) {
+    symbolToId.set(row.symbol, row.id);
+  }
   return symbolToId;
 }
 
-/** Insert market snapshots (price, volume, market_cap). Optionally merge funding/OI by symbol. */
+/** Insert market snapshots in a single batch. */
 export async function insertMarketSnapshots(
   prices: NormalizedPrice[],
   fundingBySymbol?: Map<string, NormalizedFunding>
@@ -56,14 +61,13 @@ export async function insertMarketSnapshots(
   const assetIds = await upsertAssets(
     prices.map((p) => ({ symbol: p.symbol, name: p.name }))
   );
-  let inserted = 0;
 
+  const rows: MarketSnapshotInsert[] = [];
   for (const p of prices) {
     const assetId = assetIds.get(p.symbol);
     if (!assetId) continue;
-
     const funding = fundingBySymbol?.get(p.symbol);
-    const row: MarketSnapshotInsert = {
+    rows.push({
       asset_id: assetId,
       price: p.price,
       volume_24h: p.volume_24h,
@@ -71,19 +75,17 @@ export async function insertMarketSnapshots(
       funding_rate: funding?.funding_rate ?? null,
       open_interest: funding?.open_interest ?? null,
       snapshot_at: p.snapshot_at,
-    };
-    const { error } = await db
-      .from("market_snapshots")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .insert(row as any);
-    if (error) {
-      log("insertMarketSnapshots error", { symbol: p.symbol, error: error.message });
-      return { inserted, error: error.message };
-    }
-    inserted++;
+    });
   }
 
-  return { inserted };
+  if (rows.length === 0) return { inserted: 0 };
+
+  const { error } = await (db as any).from("market_snapshots").insert(rows);
+  if (error) {
+    log("insertMarketSnapshots batch error", { error: error.message });
+    return { inserted: 0, error: error.message };
+  }
+  return { inserted: rows.length };
 }
 
 /** Update existing latest snapshots with funding/OI (by asset symbol). */
@@ -101,7 +103,7 @@ export async function updateSnapshotsFunding(
     const assetId = assetIds.get(f.symbol);
     if (!assetId) continue;
 
-    const { data: latestRow } = await db
+    const { data: latestRow } = await (db as any)
       .from("market_snapshots")
       .select("id")
       .eq("asset_id", assetId)
@@ -112,11 +114,8 @@ export async function updateSnapshotsFunding(
     const latest = latestRow as { id: string } | null;
     if (!latest?.id) continue;
 
-    // Supabase client infers 'never' for custom Database types; use loose cast
-    const q = db.from("market_snapshots") as unknown as {
-      update: (v: Record<string, unknown>) => { eq: (k: string, v: string) => Promise<{ error: { message: string } | null }> };
-    };
-    const { error } = await q
+    const { error } = await (db as any)
+      .from("market_snapshots")
       .update({ funding_rate: f.funding_rate, open_interest: f.open_interest })
       .eq("id", latest.id);
 
@@ -130,33 +129,117 @@ export async function updateSnapshotsFunding(
   return { updated };
 }
 
-/** Insert news items (no embedding; run embedding job separately if needed). */
+/**
+ * Insert news items with deduplication on URL using batch operations.
+ * Pre-fetches existing URLs to avoid N+1 queries.
+ */
 export async function insertNewsItems(
   items: NormalizedNewsItem[]
-): Promise<{ inserted: number; error?: string }> {
+): Promise<{ inserted: number; insertedIds: string[]; error?: string }> {
   const db = getDb();
-  let inserted = 0;
 
-  for (const item of items) {
-    const row: NewsItemInsert = {
-      title: item.title,
-      source: item.source,
-      summary: item.summary,
-      url: item.url,
-      sentiment: item.sentiment,
-      related_tokens: item.related_tokens,
-      published_at: item.published_at,
-    };
-    const { error } = await db
+  const urls = items.map((i) => i.url).filter(Boolean) as string[];
+  const existingUrls = new Set<string>();
+
+  if (urls.length > 0) {
+    const { data: existing } = await (db as any)
       .from("news_items")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .insert(row as any);
-    if (error) {
-      log("insertNewsItems error", { title: item.title.slice(0, 50), error: error.message });
-      return { inserted, error: error.message };
+      .select("url")
+      .in("url", urls);
+    if (existing) {
+      for (const row of existing as { url: string }[]) {
+        existingUrls.add(row.url);
+      }
     }
-    inserted++;
   }
 
-  return { inserted };
+  const newItems = items.filter((i) => !i.url || !existingUrls.has(i.url));
+  if (newItems.length === 0) return { inserted: 0, insertedIds: [] };
+
+  const rows = newItems.map((item) => ({
+    title: item.title,
+    source: item.source,
+    summary: item.summary,
+    url: item.url,
+    sentiment: item.sentiment,
+    related_tokens: item.related_tokens,
+    published_at: item.published_at,
+  }));
+
+  const { data, error } = await (db as any)
+    .from("news_items")
+    .insert(rows)
+    .select("id");
+
+  if (error) {
+    log("insertNewsItems batch error", { error: error.message });
+    return { inserted: 0, insertedIds: [], error: error.message };
+  }
+
+  const insertedIds = ((data ?? []) as { id: string }[]).map((r) => r.id);
+  return { inserted: insertedIds.length, insertedIds };
+}
+
+/** Insert document chunks in a single batch. */
+export async function insertDocumentChunks(
+  chunks: DocumentChunkInsert[]
+): Promise<{ inserted: number; error?: string }> {
+  if (chunks.length === 0) return { inserted: 0 };
+  const db = getDb();
+
+  const { error } = await (db as any)
+    .from("document_chunks")
+    .upsert(chunks, { onConflict: "source_id,chunk_index", ignoreDuplicates: true });
+
+  if (error) {
+    log("insertDocumentChunks batch error", { error: error.message });
+    return { inserted: 0, error: error.message };
+  }
+  return { inserted: chunks.length };
+}
+
+/** Create an ingestion_runs record (start of pipeline). */
+export async function createIngestionRun(
+  trigger: string
+): Promise<string | null> {
+  const db = getDb();
+  const row: IngestionRunInsert = {
+    status: "running",
+    trigger: trigger as IngestionRunInsert["trigger"],
+  };
+  const { data, error } = await (db as any)
+    .from("ingestion_runs")
+    .insert(row)
+    .select("id")
+    .single();
+  if (error) {
+    log("createIngestionRun error", { error: error.message });
+    return null;
+  }
+  return (data as { id: string })?.id ?? null;
+}
+
+/** Update an ingestion_runs record (end of pipeline). */
+export async function completeIngestionRun(
+  runId: string,
+  status: "completed" | "partial" | "failed",
+  results: {
+    prices?: SourceResult | null;
+    funding?: SourceResult | null;
+    news?: SourceResult | null;
+    embeddings?: SourceResult | null;
+  }
+): Promise<void> {
+  const db = getDb();
+  await (db as any)
+    .from("ingestion_runs")
+    .update({
+      completed_at: new Date().toISOString(),
+      status,
+      prices: results.prices ?? null,
+      funding: results.funding ?? null,
+      news: results.news ?? null,
+      embeddings: results.embeddings ?? null,
+    })
+    .eq("id", runId);
 }

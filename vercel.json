@@ -1,0 +1,9 @@
+{
+  "regions": ["fra1"],
+  "crons": [
+    {
+      "path": "/api/ingest?trigger=cron&skipEmbeddings=true",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}

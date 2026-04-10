@@ -15,5 +15,23 @@ export {
   insertMarketSnapshots,
   updateSnapshotsFunding,
   insertNewsItems,
+  insertDocumentChunks,
+  createIngestionRun,
+  completeIngestionRun,
 } from "./store";
-export type { NormalizedPrice, NormalizedFunding, NormalizedNewsItem, IngestionResult } from "./types";
+export { runIngestionPipeline } from "./orchestrator";
+export { isDataFresh } from "./freshness";
+export { chunkText, shouldChunk } from "./chunker";
+export { embedSingle, embedBatch } from "./embedder";
+export { extractArticle, extractArticlesBatch } from "./article-extractor";
+export type {
+  NormalizedPrice,
+  NormalizedFunding,
+  NormalizedNewsItem,
+  IngestionResult,
+  IngestionOptions,
+  IngestionRunRecord,
+  SourceResult,
+  ChunkConfig,
+  TextChunk,
+} from "./types";
