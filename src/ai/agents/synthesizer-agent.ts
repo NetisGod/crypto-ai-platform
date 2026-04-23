@@ -209,10 +209,9 @@ export async function runSynthesizerAgent(
       "synthesis",
       buildUserPrompt(input),
       SynthesizedBriefSchema,
-      { systemPrompt: SYSTEM_PROMPT },
+      { systemPrompt: SYSTEM_PROMPT, trace: span },
     );
 
-    await logScore(span, "structured_output_valid", 1);
     await logScore(span, "confidence_score", result.data.confidence);
     await logScore(span, "driver_count", result.data.drivers.length);
     await logScore(span, "risk_count", result.data.risks.length);
@@ -228,7 +227,6 @@ export async function runSynthesizerAgent(
 
     return result.data;
   } catch (error) {
-    await logScore(span, "structured_output_valid", 0);
     await logError(span, error);
     end({ error: error instanceof Error ? error.message : String(error) });
     throw error;

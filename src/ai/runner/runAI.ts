@@ -51,6 +51,7 @@ export interface RunAIOptions {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  trace?: LangfuseTrace | null;
 }
 
 export interface RunAIResult {
@@ -73,6 +74,7 @@ export interface RunAIStructuredOptions {
   temperature?: number;
   maxTokens?: number;
   maxRetries?: number;
+  trace?: LangfuseTrace | null;
 }
 
 export interface RunAIStructuredResult<T> {
@@ -129,8 +131,12 @@ function createRunTrace(
   task: string,
   config: ModelConfig,
   prompt: string,
+  existingTrace?: LangfuseTrace | null,
   systemPrompt?: string,
 ): LangfuseTrace | null {
+  if (existingTrace) {
+    return existingTrace;
+  }
   return startTrace(`runAI:${task}`, {
     task,
     model: config.model,
@@ -182,7 +188,13 @@ export async function runAI(
   applyOverrides(config, options);
   logRequest(task, config);
 
-  const trace = createRunTrace(task, config, prompt, options.systemPrompt);
+  const trace = createRunTrace(
+    task,
+    config,
+    prompt,
+    options.trace,
+    options.systemPrompt,
+  );
 
   try {
     const response: LLMResponse = await callOpenRouter(
@@ -204,7 +216,9 @@ export async function runAI(
       response.latencyMs,
     );
     await logScore(trace, "latency_ms", response.latencyMs);
-    setTraceOutput(trace, { text: response.text });
+    if (!options.trace) {
+      setTraceOutput(trace, { text: response.text });
+    }
 
     return {
       text: response.text,
@@ -257,7 +271,13 @@ export async function runAIStructured<T>(
   applyOverrides(config, options);
   logRequest(task, config);
 
-  const trace = createRunTrace(task, config, prompt, options.systemPrompt);
+  const trace = createRunTrace(
+    task,
+    config,
+    prompt,
+    options.trace,
+    options.systemPrompt,
+  );
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   let lastError: unknown = null;
 
@@ -286,7 +306,9 @@ export async function runAIStructured<T>(
         await logScore(trace, "latency_ms", response.latencyMs);
         await logScore(trace, "structured_output_valid", 1);
         await logScore(trace, "retry_count", attempt);
-        setTraceOutput(trace, response.data);
+        if (!options.trace) {
+          setTraceOutput(trace, response.data);
+        }
 
         return {
           data: response.data,

@@ -134,10 +134,9 @@ export async function runMarketDataAgent(
       "extraction",
       buildUserPrompt(snapshots),
       MarketDataAnalysisSchema,
-      { systemPrompt: SYSTEM_PROMPT },
+      { systemPrompt: SYSTEM_PROMPT, trace: span },
     );
 
-    await logScore(span, "structured_output_valid", 1);
     await logScore(span, "confidence_score", result.data.confidence);
     await logScore(span, "signal_count", result.data.key_signals.length);
 
@@ -150,7 +149,6 @@ export async function runMarketDataAgent(
 
     return result.data;
   } catch (error) {
-    await logScore(span, "structured_output_valid", 0);
     await logError(span, error);
     end({ error: error instanceof Error ? error.message : String(error) });
     throw error;

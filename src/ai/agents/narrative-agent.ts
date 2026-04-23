@@ -167,10 +167,9 @@ export async function runNarrativeAgent(
       "extraction",
       buildUserPrompt(news, narratives),
       NarrativeAnalysisSchema,
-      { systemPrompt: SYSTEM_PROMPT },
+      { systemPrompt: SYSTEM_PROMPT, trace: span },
     );
 
-    await logScore(span, "structured_output_valid", 1);
     await logScore(span, "confidence_score", result.data.confidence);
     await logScore(span, "narrative_count", result.data.top_narratives.length);
     await logScore(span, "affected_token_count", result.data.affected_tokens.length);
@@ -184,7 +183,6 @@ export async function runNarrativeAgent(
 
     return result.data;
   } catch (error) {
-    await logScore(span, "structured_output_valid", 0);
     await logError(span, error);
     end({ error: error instanceof Error ? error.message : String(error) });
     throw error;

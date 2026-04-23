@@ -54,6 +54,19 @@ import { runValidatorAgent } from "../agents/validator-agent";
 const WORKFLOW_NAME = "market_brief_pipeline";
 
 // ---------------------------------------------------------------------------
+// Pipeline options (used by eval layer to inject context and skip persistence)
+// ---------------------------------------------------------------------------
+
+export interface PipelineOptions {
+  overrideContext?: {
+    snapshots: SnapshotRow[];
+    news: NewsRow[];
+    narratives: NarrativeRow[];
+  };
+  skipPersistence?: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Context loading (Supabase)
 // ---------------------------------------------------------------------------
 
@@ -138,11 +151,20 @@ async function loadContextFromDb(): Promise<{
 // Graph nodes
 // ---------------------------------------------------------------------------
 
-async function loadContextNode(
-  _state: MarketBriefState,
-): Promise<MarketBriefUpdate> {
-  const { snapshots, news, narratives } = await loadContextFromDb();
-  return { snapshots, news, narratives };
+function createLoadContextNode(options?: PipelineOptions) {
+  return async function loadContextNode(
+    _state: MarketBriefState,
+  ): Promise<MarketBriefUpdate> {
+    if (options?.overrideContext) {
+      return {
+        snapshots: options.overrideContext.snapshots,
+        news: options.overrideContext.news,
+        narratives: options.overrideContext.narratives,
+      };
+    }
+    const { snapshots, news, narratives } = await loadContextFromDb();
+    return { snapshots, news, narratives };
+  };
 }
 
 async function analyzeNode(
@@ -243,20 +265,34 @@ async function validateNode(
 }
 
 // ---------------------------------------------------------------------------
-// Graph compilation (once at module level, reused across requests)
+// Graph compilation
 // ---------------------------------------------------------------------------
 
-const compiledGraph = new StateGraph(MarketBriefGraphState)
-  .addNode("loadContext", loadContextNode)
-  .addNode("analyze", analyzeNode)
-  .addNode("synthesize", synthesizeNode)
-  .addNode("validate", validateNode)
-  .addEdge(START, "loadContext")
-  .addEdge("loadContext", "analyze")
-  .addEdge("analyze", "synthesize")
-  .addEdge("synthesize", "validate")
-  .addEdge("validate", END)
-  .compile();
+let defaultCompiledGraph: ReturnType<ReturnType<typeof StateGraph<typeof MarketBriefGraphState>>["compile"]> | null = null;
+
+function buildGraph(options?: PipelineOptions) {
+  return new StateGraph(MarketBriefGraphState)
+    .addNode("loadContext", createLoadContextNode(options))
+    .addNode("analyze", analyzeNode)
+    .addNode("synthesize", synthesizeNode)
+    .addNode("validate", validateNode)
+    .addEdge(START, "loadContext")
+    .addEdge("loadContext", "analyze")
+    .addEdge("analyze", "synthesize")
+    .addEdge("synthesize", "validate")
+    .addEdge("validate", END)
+    .compile();
+}
+
+function getCompiledGraph(options?: PipelineOptions) {
+  if (options?.overrideContext) {
+    return buildGraph(options);
+  }
+  if (!defaultCompiledGraph) {
+    defaultCompiledGraph = buildGraph();
+  }
+  return defaultCompiledGraph;
+}
 
 // ---------------------------------------------------------------------------
 // Public entry point
@@ -270,37 +306,44 @@ export interface MarketBriefPipelineResult {
   debugJson: MarketBriefDebugPayload;
 }
 
-export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResult> {
+export async function runMarketBriefPipeline(
+  options?: PipelineOptions,
+): Promise<MarketBriefPipelineResult> {
   const pipelineStart = Date.now();
+  const skipPersistence = options?.skipPersistence ?? false;
 
   // --- Parent Langfuse trace for the entire pipeline ---
+  const traceName = skipPersistence ? "market_brief_eval" : WORKFLOW_NAME;
   const trace: LangfuseTrace | null = startTrace(
-    WORKFLOW_NAME,
-    { pipeline: "multi_agent", model: PIPELINE_MODEL_LABEL },
+    traceName,
+    { pipeline: "multi_agent", model: PIPELINE_MODEL_LABEL, eval: skipPersistence },
     { triggered_at: new Date().toISOString() },
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = getDb() as any;
+  const db = skipPersistence ? null : (getDb() as any);
 
-  // --- Track run in ai_runs ---
-  const { data: aiRunInsert, error: aiRunInsertError } = await db
-    .from("ai_runs")
-    .insert({
-      run_type: WORKFLOW_NAME,
-      status: "running",
-      input_snapshot: { pipeline: "multi_agent" },
-      started_at: new Date().toISOString(),
-    })
-    .select("id")
-    .single();
+  // --- Track run in ai_runs (skip for eval) ---
+  let aiRunId: string | null = null;
+  if (db) {
+    const { data: aiRunInsert, error: aiRunInsertError } = await db
+      .from("ai_runs")
+      .insert({
+        run_type: WORKFLOW_NAME,
+        status: "running",
+        input_snapshot: { pipeline: "multi_agent" },
+        started_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
 
-  const aiRunId: string | null =
-    aiRunInsertError || !aiRunInsert ? null : (aiRunInsert.id as string);
+    aiRunId = aiRunInsertError || !aiRunInsert ? null : (aiRunInsert.id as string);
+  }
 
   try {
     // --- Invoke the LangGraph pipeline ---
-    const finalState: MarketBriefState = await compiledGraph.invoke({
+    const graph = getCompiledGraph(options);
+    const finalState: MarketBriefState = await graph.invoke({
       trace,
       snapshots: [],
       news: [],
@@ -370,47 +413,51 @@ export async function runMarketBriefPipeline(): Promise<MarketBriefPipelineResul
     await logScore(trace, "validation_passed", finalState.validationResult?.valid ? 1 : 0);
     await logScore(trace, "agent_coverage", agentCoverage.length / 4);
 
-    // --- Persist to market_briefs ---
-    await db.from("market_briefs").insert({
-      content: JSON.stringify({
-        brief: finalBrief,
-        model: PIPELINE_MODEL_LABEL,
-        context: {
-          snapshots_count: (finalState.snapshots ?? []).length,
-          news_count: (finalState.news ?? []).length,
-        },
-      }),
-      debug_json: debugJson,
-    });
-
-    // --- Update ai_runs ---
-    if (aiRunId) {
-      await db
-        .from("ai_runs")
-        .update({
-          status: "completed",
-          output_snapshot: {
-            workflow_name: WORKFLOW_NAME,
-            model: PIPELINE_MODEL_LABEL,
-            latency_ms: latencyMs,
-            agent_coverage: agentCoverage,
-            brief: finalBrief,
-            issues: finalState.issues ?? [],
+    // --- Persist to market_briefs (skip for eval) ---
+    if (db) {
+      await db.from("market_briefs").insert({
+        content: JSON.stringify({
+          brief: finalBrief,
+          model: PIPELINE_MODEL_LABEL,
+          context: {
+            snapshots_count: (finalState.snapshots ?? []).length,
+            news_count: (finalState.news ?? []).length,
           },
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", aiRunId);
+        }),
+        debug_json: debugJson,
+      });
+
+      // --- Update ai_runs ---
+      if (aiRunId) {
+        await db
+          .from("ai_runs")
+          .update({
+            status: "completed",
+            output_snapshot: {
+              workflow_name: WORKFLOW_NAME,
+              model: PIPELINE_MODEL_LABEL,
+              latency_ms: latencyMs,
+              agent_coverage: agentCoverage,
+              brief: finalBrief,
+              issues: finalState.issues ?? [],
+            },
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", aiRunId);
+      }
     }
 
     return { brief: finalBrief, model: PIPELINE_MODEL_LABEL, latencyMs, aiRunId, debugJson };
   } catch (error) {
     const latencyMs = Date.now() - pipelineStart;
-    await markAiRunFailed(
-      db,
-      aiRunId,
-      error instanceof Error ? error.message : String(error),
-      latencyMs,
-    );
+    if (db) {
+      await markAiRunFailed(
+        db,
+        aiRunId,
+        error instanceof Error ? error.message : String(error),
+        latencyMs,
+      );
+    }
     await logError(trace, error);
     throw error;
   } finally {

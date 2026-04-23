@@ -145,10 +145,9 @@ export async function runNewsAgent(
       "extraction",
       buildUserPrompt(news),
       NewsAnalysisSchema,
-      { systemPrompt: SYSTEM_PROMPT },
+      { systemPrompt: SYSTEM_PROMPT, trace: span },
     );
 
-    await logScore(span, "structured_output_valid", 1);
     await logScore(span, "confidence_score", result.data.confidence);
     await logScore(span, "driver_count", result.data.main_drivers.length);
 
@@ -161,7 +160,6 @@ export async function runNewsAgent(
 
     return result.data;
   } catch (error) {
-    await logScore(span, "structured_output_valid", 0);
     await logError(span, error);
     end({ error: error instanceof Error ? error.message : String(error) });
     throw error;
