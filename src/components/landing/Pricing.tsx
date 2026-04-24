@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { Reveal } from "./Reveal";
 
 const plans = [
   {
@@ -37,22 +41,33 @@ export function Pricing() {
   return (
     <section id="pricing" className="py-24 sm:py-32">
       <div className="container mx-auto px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">Pricing</p>
           <h2 className="mt-3 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             Plans that scale with your strategy
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">Start free. Upgrade when you&apos;re ready to go pro.</p>
-        </div>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Start free. Upgrade when you&apos;re ready to go pro.
+          </p>
+        </Reveal>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {plans.map((p) => (
-            <div
+        <div className="mt-16 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+          {plans.map((p, i) => (
+            <motion.div
               key={p.name}
-              className={`relative flex flex-col rounded-3xl border p-8 transition-all ${
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.1,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
+              whileHover={{ y: -6 }}
+              className={`relative flex h-full min-h-0 flex-col rounded-3xl border p-8 transition-shadow duration-300 ${
                 p.highlighted
-                  ? "border-primary/40 bg-card shadow-elegant"
-                  : "border-border/60 bg-card shadow-soft"
+                  ? "border-primary/40 bg-card shadow-elegant lg:scale-[1.03]"
+                  : "border-border/60 bg-card shadow-soft hover:shadow-elegant"
               }`}
             >
               {p.highlighted && (
@@ -66,7 +81,7 @@ export function Pricing() {
                 <span className="text-5xl font-semibold tracking-tight text-foreground">{p.price}</span>
                 <span className="text-sm text-muted-foreground">{p.period}</span>
               </div>
-              <ul className="mt-8 space-y-3">
+              <ul className="mt-8 flex min-h-0 flex-1 flex-col gap-3">
                 {p.features.map((f) => (
                   <li key={f} className="flex items-start gap-3 text-sm text-foreground">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -74,10 +89,10 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button variant={p.variant} size="lg" className="mt-10 w-full" asChild>
-                <Link href="/dashboard">{p.cta}</Link>
+              <Button variant={p.variant} size="lg" className="mt-10 w-full shrink-0" asChild>
+                <Link href="/app">{p.cta}</Link>
               </Button>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

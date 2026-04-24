@@ -8,17 +8,17 @@ import {
   MessageSquareText,
   HelpCircle,
   Activity,
-  LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/brand/logo";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/token/BTC", label: "Token", icon: Coins },
-  { href: "/narratives", label: "Narratives", icon: MessageSquareText },
-  { href: "/ask", label: "Ask", icon: HelpCircle },
-  { href: "/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/app/token/BTC", label: "Token", icon: Coins },
+  { href: "/app/narratives", label: "Narratives", icon: MessageSquareText },
+  { href: "/app/ask", label: "Ask", icon: HelpCircle },
+  { href: "/app/monitoring", label: "Monitoring", icon: Activity },
 ] as const;
 
 export function Sidebar() {
@@ -27,16 +27,18 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-56 flex-col border-r border-border bg-card">
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
-        <LineChart className="h-7 w-7 text-primary" />
+        <Logo size={41} />
         <span className="font-semibold tracking-tight text-foreground">
-          Crypto AI
+          CoinTrace AI
         </span>
       </div>
       <nav className="flex flex-1 flex-col gap-0.5 p-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href ||
-            (href.startsWith("/token") && pathname.startsWith("/token"));
+            (href === "/app" && pathname === "/app") ||
+            (href.startsWith("/app/token") && pathname.startsWith("/app/token")) ||
+            (href !== "/app" && pathname.startsWith(href));
           return (
             <Link
               key={href}

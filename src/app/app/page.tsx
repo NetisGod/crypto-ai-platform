@@ -77,7 +77,7 @@ export default function DashboardPage() {
           changeLabel="24h"
           icon={DollarSign}
           variant="accent"
-          href="/token/BTC"
+          href="/app/token/BTC"
           loading={pricesLoading && !liveBtc}
         />
         <MetricCard
@@ -86,7 +86,7 @@ export default function DashboardPage() {
           change={ethChange}
           changeLabel="24h"
           icon={TrendingUp}
-          href="/token/ETH"
+          href="/app/token/ETH"
           loading={pricesLoading && !liveEth}
         />
         <MetricCard
@@ -118,7 +118,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Top movers</CardTitle>
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/token/BTC">
+            <Link href="/app/token/BTC">
               View all <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
@@ -128,7 +128,7 @@ export default function DashboardPage() {
             {topMovers.map((token) => (
               <Link
                 key={token.symbol}
-                href={`/token/${token.symbol}`}
+                href={`/app/token/${token.symbol}`}
                 className="flex min-w-[140px] items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
               >
                 <div>

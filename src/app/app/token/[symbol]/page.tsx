@@ -42,7 +42,7 @@ export default async function TokenPage({
     <div className="space-y-8">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild aria-label="Back to dashboard">
-          <Link href="/dashboard">
+          <Link href="/app">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

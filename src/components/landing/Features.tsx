@@ -1,4 +1,8 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Brain, LineChart, Shield, Zap, Bot, Globe2 } from "lucide-react";
+import { Reveal } from "./Reveal";
 
 const features = [
   {
@@ -37,7 +41,7 @@ export function Features() {
   return (
     <section id="features" className="relative py-24 sm:py-32">
       <div className="container mx-auto px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">Platform</p>
           <h2 className="mt-3 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             Everything you need to trade with conviction
@@ -45,21 +49,30 @@ export function Features() {
           <p className="mt-4 text-lg text-muted-foreground">
             From signal generation to execution — CoinTrace AI replaces a dozen tools with one intelligent platform.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <div
+          {features.map((f, i) => (
+            <motion.div
               key={f.title}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elegant"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{
+                duration: 0.5,
+                delay: i * 0.07,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
+              whileHover={{ y: -6 }}
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-7 shadow-soft transition-shadow duration-300 hover:shadow-elegant"
             >
-              <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
+              <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-primary shadow-glow transition-transform duration-300 group-hover:scale-110">
                 <f.icon className="h-5 w-5 text-primary-foreground" />
               </div>
               <h3 className="text-lg font-semibold tracking-tight text-foreground">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-              <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
-            </div>
+              <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-accent/15 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+            </motion.div>
           ))}
         </div>
       </div>

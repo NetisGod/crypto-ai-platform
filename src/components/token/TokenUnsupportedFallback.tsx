@@ -14,7 +14,7 @@ export function TokenUnsupportedFallback({ symbol }: TokenUnsupportedFallbackPro
     <div className="space-y-8">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard">
+          <Link href="/app">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -42,12 +42,12 @@ export function TokenUnsupportedFallback({ symbol }: TokenUnsupportedFallbackPro
           <div className="flex gap-3">
             {SUPPORTED_SYMBOLS.map((sym) => (
               <Button key={sym} variant="outline" asChild>
-                <Link href={`/token/${sym}`}>{sym}</Link>
+                <Link href={`/app/token/${sym}`}>{sym}</Link>
               </Button>
             ))}
           </div>
           <Button variant="secondary" asChild>
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/app">Back to Dashboard</Link>
           </Button>
         </CardContent>
       </Card>

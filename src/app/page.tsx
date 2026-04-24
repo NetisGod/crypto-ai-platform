@@ -1,11 +1,11 @@
-import { Header } from "@/components/site/Header";
-import { Hero } from "@/components/site/Hero";
-import { LogoCloud } from "@/components/site/LogoCloud";
-import { Features } from "@/components/site/Features";
-import { Stats } from "@/components/site/Stats";
-import { Pricing } from "@/components/site/Pricing";
-import { CTA } from "@/components/site/CTA";
-import { Footer } from "@/components/site/Footer";
+import { Header } from "@/components/landing/Header";
+import { Hero } from "@/components/landing/Hero";
+import { LogoCloud } from "@/components/landing/LogoCloud";
+import { Features } from "@/components/landing/Features";
+import { Stats } from "@/components/landing/Stats";
+import { Pricing } from "@/components/landing/Pricing";
+import { CTA } from "@/components/landing/CTA";
+import { Footer } from "@/components/landing/Footer";
 
 export const metadata = {
   title: "CoinTrace AI — AI-Powered Crypto Trading Analytics",

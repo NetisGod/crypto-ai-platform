@@ -6,7 +6,7 @@ export default function NotFound() {
       <h1 className="text-2xl font-bold">404</h1>
       <p className="text-muted-foreground">This page could not be found.</p>
       <Link
-        href="/dashboard"
+        href="/app"
         className="text-primary underline underline-offset-4 hover:no-underline"
       >
         Go to Dashboard
