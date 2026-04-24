@@ -3,6 +3,7 @@ import { Hero } from "@/components/landing/Hero";
 import { LogoCloud } from "@/components/landing/LogoCloud";
 import { Features } from "@/components/landing/Features";
 import { Stats } from "@/components/landing/Stats";
+import { FreeAiSamples } from "@/components/landing/FreeAiSamples";
 import { Pricing } from "@/components/landing/Pricing";
 import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
@@ -23,6 +24,7 @@ export default function LandingPage() {
         <LogoCloud />
         <Features />
         <Stats />
+        <FreeAiSamples />
         <Pricing />
         <CTA />
       </main>

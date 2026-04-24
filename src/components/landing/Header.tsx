@@ -10,9 +10,15 @@ export function Header() {
           <Logo size={41} priority />
           <span className="text-lg font-semibold tracking-tight text-foreground">CoinTrace AI</span>
         </Link>
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-5 lg:gap-7 xl:gap-8 md:flex">
           <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Features</a>
           <a href="#analytics" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Analytics</a>
+          <a
+            href="#samples"
+            className="whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Free AI Analysis Samples
+          </a>
           <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
         </nav>
         <div className="flex items-center gap-3">

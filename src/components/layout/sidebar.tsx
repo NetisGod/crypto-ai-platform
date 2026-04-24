@@ -26,12 +26,16 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-56 flex-col border-r border-border bg-card">
-      <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+      <Link
+        href="/"
+        className="flex h-14 items-center gap-2 border-b border-border px-4 transition-colors hover:bg-muted/40"
+        aria-label="CoinTrace AI — home"
+      >
         <Logo size={35} />
         <span className="font-semibold tracking-tight text-foreground">
           CoinTrace AI
         </span>
-      </div>
+      </Link>
       <nav className="flex flex-1 flex-col gap-0.5 p-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
