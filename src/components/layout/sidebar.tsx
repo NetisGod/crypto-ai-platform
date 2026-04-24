@@ -27,7 +27,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-56 flex-col border-r border-border bg-card">
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
-        <Logo size={41} />
+        <Logo size={35} />
         <span className="font-semibold tracking-tight text-foreground">
           CoinTrace AI
         </span>

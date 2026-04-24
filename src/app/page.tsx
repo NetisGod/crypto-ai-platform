@@ -6,6 +6,7 @@ import { Stats } from "@/components/landing/Stats";
 import { Pricing } from "@/components/landing/Pricing";
 import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
+import { CookieConsent } from "@/components/landing/CookieConsent";
 
 export const metadata = {
   title: "CoinTrace AI — AI-Powered Crypto Trading Analytics",
@@ -26,6 +27,7 @@ export default function LandingPage() {
         <CTA />
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   );
 }
