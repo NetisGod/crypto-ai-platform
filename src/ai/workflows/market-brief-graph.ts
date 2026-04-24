@@ -268,8 +268,6 @@ async function validateNode(
 // Graph compilation
 // ---------------------------------------------------------------------------
 
-let defaultCompiledGraph: ReturnType<ReturnType<typeof StateGraph<typeof MarketBriefGraphState>>["compile"]> | null = null;
-
 function buildGraph(options?: PipelineOptions) {
   return new StateGraph(MarketBriefGraphState)
     .addNode("loadContext", createLoadContextNode(options))
@@ -283,6 +281,8 @@ function buildGraph(options?: PipelineOptions) {
     .addEdge("validate", END)
     .compile();
 }
+
+let defaultCompiledGraph: ReturnType<typeof buildGraph> | null = null;
 
 function getCompiledGraph(options?: PipelineOptions) {
   if (options?.overrideContext) {

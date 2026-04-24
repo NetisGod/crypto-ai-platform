@@ -145,7 +145,7 @@ export async function snapshotFromDb(
 
   const item: MarketBriefDatasetItem = {
     input: {
-      snapshots: Array.from(snapshotsByAsset.values()) as MarketBriefDatasetItem["input"]["snapshots"],
+      snapshots: Array.from(snapshotsByAsset.values()) as unknown as MarketBriefDatasetItem["input"]["snapshots"],
       news: (newsRows ?? []) as MarketBriefDatasetItem["input"]["news"],
       narratives: (narrativeRows ?? []) as MarketBriefDatasetItem["input"]["narratives"],
     },
