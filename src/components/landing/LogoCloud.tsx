@@ -5,8 +5,14 @@ import { exchanges } from "./ExchangeLogos";
 
 export function LogoCloud() {
   return (
-    <section className="border-y border-border/50 bg-card/40">
+    <section
+      aria-labelledby="exchanges-heading"
+      className="border-y border-border/50 bg-card/40"
+    >
       <div className="container mx-auto px-6 py-12">
+        <h2 id="exchanges-heading" className="sr-only">
+          Connected exchanges
+        </h2>
         <p className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
           Connected to the world&apos;s leading exchanges
         </p>

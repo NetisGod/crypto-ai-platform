@@ -19,8 +19,16 @@ export function Stats() {
   const panelY = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   return (
-    <section id="analytics" ref={ref} className="relative py-20">
+    <section
+      id="analytics"
+      ref={ref}
+      aria-labelledby="analytics-heading"
+      className="relative py-20"
+    >
       <div className="container mx-auto px-6">
+        <h2 id="analytics-heading" className="sr-only">
+          CoinTrace AI by the numbers
+        </h2>
         <motion.div
           style={{ y: panelY }}
           className="overflow-hidden rounded-3xl border border-border/60 bg-gradient-primary px-8 py-14 shadow-elegant sm:px-14"
