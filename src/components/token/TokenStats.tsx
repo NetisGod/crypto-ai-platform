@@ -35,13 +35,26 @@ function StatRow({
     <div className="flex items-center justify-between py-2.5 text-sm">
       <span className="text-muted-foreground">{label}</span>
       {loading ? (
-        <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+        <div className="h-5 w-16 rounded animate-shimmer" />
       ) : value ? (
-        <span className={cn("font-medium", change !== undefined && (positive ? "text-emerald-500" : "text-red-500"))}>
+        <span
+          className={cn(
+            "font-semibold tabular-nums",
+            change !== undefined
+              ? positive
+                ? "text-success"
+                : "text-danger"
+              : "text-foreground",
+          )}
+        >
           {value}
           {change !== undefined && (
             <span className="ml-1 inline-flex items-center">
-              {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {positive ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
             </span>
           )}
         </span>
@@ -58,10 +71,17 @@ export function TokenStats({ symbol, className }: TokenStatsProps) {
 
   if (error) {
     return (
-      <Card className={className}>
+      <Card
+        className={cn(
+          "rounded-2xl border-border/60 shadow-soft",
+          className,
+        )}
+      >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base font-medium">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-tight">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <BarChart3 className="h-3.5 w-3.5" />
+            </div>
             Market Stats
           </CardTitle>
         </CardHeader>
@@ -80,10 +100,17 @@ export function TokenStats({ symbol, className }: TokenStatsProps) {
   const isEmpty = !loading && !priceData;
 
   return (
-    <Card className={className}>
+    <Card
+      className={cn(
+        "rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-tight">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <BarChart3 className="h-3.5 w-3.5" />
+          </div>
           Market Stats
         </CardTitle>
       </CardHeader>
@@ -93,7 +120,7 @@ export function TokenStats({ symbol, className }: TokenStatsProps) {
             No stats available for {symbol}
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/60">
             <StatRow
               label="Price"
               value={priceData ? formatPrice(priceData.currentPrice) : null}

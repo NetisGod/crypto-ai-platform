@@ -20,8 +20,8 @@ const sentimentIcon = {
 };
 
 const sentimentColor = {
-  positive: "text-emerald-500",
-  negative: "text-red-500",
+  positive: "text-success",
+  negative: "text-danger",
   neutral: "text-muted-foreground",
 };
 
@@ -32,30 +32,37 @@ export function NewsFeed({
   maxHeight = "400px",
 }: NewsFeedProps) {
   return (
-    <Card className={cn(className)}>
+    <Card
+      className={cn(
+        "min-w-0 rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea style={{ maxHeight }}>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/60">
             {items.map((item) => {
               const Icon = sentimentIcon[item.sentiment];
               return (
                 <a
                   key={item.id}
                   href={item.url}
-                  className="block px-6 py-4 transition-colors hover:bg-muted/50"
+                  className="group block px-6 py-4 transition-colors hover:bg-muted/40"
                 >
                   <div className="flex items-start gap-3">
                     <Icon
                       className={cn(
                         "mt-0.5 h-4 w-4 shrink-0",
-                        sentimentColor[item.sentiment]
+                        sentimentColor[item.sentiment],
                       )}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium leading-snug text-foreground line-clamp-2">
+                      <p className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-accent">
                         {item.title}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
@@ -66,7 +73,7 @@ export function NewsFeed({
                           {item.relatedTokens.map((t) => (
                             <span
                               key={t}
-                              className="rounded bg-primary/15 px-1.5 py-0.5 text-xs font-medium text-primary"
+                              className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent"
                             >
                               {t}
                             </span>
@@ -74,7 +81,7 @@ export function NewsFeed({
                         </div>
                       )}
                     </div>
-                    <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-accent" />
                   </div>
                 </a>
               );

@@ -38,12 +38,12 @@ function formatYAxis(value: number): string {
 function ChartSkeleton() {
   return (
     <div className="h-[280px] w-full space-y-3">
-      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+      <div className="h-4 w-24 rounded animate-shimmer" />
       <div className="flex h-[230px] items-end gap-0.5">
         {Array.from({ length: 30 }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 animate-pulse rounded-t bg-muted/60"
+            className="flex-1 rounded-t animate-shimmer"
             style={{
               height: `${20 + Math.sin((i / 30) * Math.PI * 2) * 30 + ((i * 7 + 3) % 20)}%`,
               animationDelay: `${i * 15}ms`,
@@ -52,8 +52,8 @@ function ChartSkeleton() {
         ))}
       </div>
       <div className="flex justify-between">
-        <div className="h-3 w-12 animate-pulse rounded bg-muted/60" />
-        <div className="h-3 w-12 animate-pulse rounded bg-muted/60" />
+        <div className="h-3 w-12 rounded animate-shimmer" />
+        <div className="h-3 w-12 rounded animate-shimmer" />
       </div>
     </div>
   );
@@ -84,18 +84,27 @@ export function TokenChart({ symbol, className }: TokenChartProps) {
   const gradientId = `tokenChartGradient-${symbol}`;
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-medium">{symbol} Price</CardTitle>
-        <div className="flex gap-1">
+    <Card
+      className={cn(
+        "overflow-hidden rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
+      <CardHeader className="flex flex-col items-start justify-between gap-3 pb-2 sm:flex-row sm:items-center">
+        <CardTitle className="text-base font-semibold tracking-tight">
+          {symbol} Price
+        </CardTitle>
+        <div className="inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-card/60 p-0.5 backdrop-blur">
           {TIME_RANGES.map(({ label, value }) => (
             <Button
               key={value}
               size="sm"
-              variant={range === value ? "default" : "ghost"}
+              variant="ghost"
               className={cn(
-                "h-7 px-2.5 text-xs",
-                range === value && "pointer-events-none"
+                "h-7 rounded-full px-2.5 text-[11px]",
+                range === value
+                  ? "pointer-events-none bg-accent/15 text-accent"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
               )}
               onClick={() => setRange(value)}
             >
@@ -127,12 +136,12 @@ export function TokenChart({ symbol, className }: TokenChartProps) {
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="0%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.35}
+                      stopColor="hsl(var(--accent))"
+                      stopOpacity={0.4}
                     />
                     <stop
                       offset="100%"
-                      stopColor="hsl(var(--primary))"
+                      stopColor="hsl(var(--accent))"
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -175,7 +184,7 @@ export function TokenChart({ symbol, className }: TokenChartProps) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--primary))"
+                  stroke="hsl(var(--accent))"
                   strokeWidth={2}
                   fill={`url(#${gradientId})`}
                   animationDuration={600}

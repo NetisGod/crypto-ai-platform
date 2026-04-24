@@ -55,15 +55,15 @@ const SAMPLES: Sample[] = [
 ];
 
 const TERM_STYLES: Record<Term, string> = {
-  "Short Term": "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  "Short Term": "border-warning/30 bg-warning/10 text-warning",
   "Medium Term": "border-primary/30 bg-primary/10 text-primary",
-  "Long Term": "border-violet-400/30 bg-violet-400/10 text-violet-300",
+  "Long Term": "border-ai/30 bg-ai/10 text-ai",
 };
 
 const STANCE_STYLES: Record<Stance, string> = {
-  bullish: "text-emerald-400",
-  bearish: "text-rose-400",
-  neutral: "text-yellow-400",
+  bullish: "text-success",
+  bearish: "text-danger",
+  neutral: "text-warning",
 };
 
 function stanceLabel(s: Stance) {

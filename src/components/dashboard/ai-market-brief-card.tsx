@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { StatPill } from "@/components/ui/stat-pill";
 import { RefreshCw, Sparkles, Eye } from "lucide-react";
 import {
   MarketBriefDebugDrawer,
@@ -105,63 +104,80 @@ export function AiMarketBriefCard() {
   const showEmpty = status === "empty" || (!brief && status === "idle");
   const showRefreshSpinner = isRefreshing;
 
+  const confidenceTone = brief
+    ? brief.confidence >= 0.7
+      ? "success"
+      : brief.confidence >= 0.4
+        ? "warning"
+        : "danger"
+    : "neutral";
+
   return (
     <>
-      <Card
-        className={cn(
-          "relative overflow-hidden border border-primary/25 bg-gradient-to-br",
-          "from-slate-950/90 via-slate-900/90 to-slate-950/90 shadow-lg shadow-primary/20",
-        )}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),transparent_55%),radial-gradient(circle_at_bottom,_rgba(129,140,248,0.10),transparent_60%)]" />
-        <CardHeader className="relative z-10 flex flex-row items-center justify-between pb-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/20 text-primary">
-              <Sparkles className="h-4 w-4" />
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-hero shadow-elegant">
+        {/* Accent wash (matches landing hero) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/20 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl"
+        />
+
+        <div className="relative z-10 flex flex-col gap-3 border-b border-border/40 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <CardTitle className="text-base font-semibold tracking-tight">
-              AI Market Brief
-            </CardTitle>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                Multi-agent synthesis
+              </p>
+              <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                AI Market Brief
+              </h3>
+            </div>
           </div>
           <Button
-            variant="outline"
+            variant="glass"
             size="sm"
             onClick={() => void refreshBrief()}
             disabled={showRefreshSpinner}
-            className="border-primary/40 bg-slate-950/40 text-xs text-primary hover:bg-primary/10"
+            className="rounded-full text-xs"
           >
             {showRefreshSpinner ? (
-              <span className="flex items-center gap-1">
-                <span className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 animate-spin rounded-full border border-accent border-t-transparent" />
                 Refreshing…
               </span>
             ) : (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1.5">
                 <RefreshCw className="h-3 w-3" />
                 Refresh
               </span>
             )}
           </Button>
-        </CardHeader>
+        </div>
 
-        <CardContent className="relative z-10 space-y-4 text-sm text-muted-foreground">
+        <div className="relative z-10 space-y-5 px-6 py-5">
           {isLoading && (
             <div className="space-y-4">
-              <div className="h-4 w-3/4 animate-pulse rounded-md bg-slate-800/70" />
+              <div className="h-4 w-3/4 rounded-md animate-shimmer" />
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <div className="h-3 w-20 animate-pulse rounded bg-slate-800/70" />
+                  <div className="h-3 w-20 rounded animate-shimmer" />
                   <div className="space-y-1.5">
-                    <div className="h-3 w-full animate-pulse rounded bg-slate-800/60" />
-                    <div className="h-3 w-5/6 animate-pulse rounded bg-slate-800/60" />
-                    <div className="h-3 w-2/3 animate-pulse rounded bg-slate-800/60" />
+                    <div className="h-3 w-full rounded animate-shimmer" />
+                    <div className="h-3 w-5/6 rounded animate-shimmer" />
+                    <div className="h-3 w-2/3 rounded animate-shimmer" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 w-16 animate-pulse rounded bg-slate-800/70" />
+                  <div className="h-3 w-16 rounded animate-shimmer" />
                   <div className="space-y-1.5">
-                    <div className="h-3 w-full animate-pulse rounded bg-slate-800/60" />
-                    <div className="h-3 w-4/6 animate-pulse rounded bg-slate-800/60" />
+                    <div className="h-3 w-full rounded animate-shimmer" />
+                    <div className="h-3 w-4/6 rounded animate-shimmer" />
                   </div>
                 </div>
               </div>
@@ -169,53 +185,53 @@ export function AiMarketBriefCard() {
           )}
 
           {status === "error" && (
-            <div className="space-y-2 text-xs text-red-400">
+            <div className="space-y-1 text-xs text-danger">
               <p className="font-medium">Generation failed.</p>
-              <p className="text-red-400/80">
+              <p className="text-danger/80">
                 {errorMessage ?? "Please try again."}
               </p>
             </div>
           )}
 
           {showEmpty && !isLoading && (
-            <p className="text-xs text-muted-foreground/80">
+            <p className="text-sm text-muted-foreground">
               No market brief has been generated yet. Click{" "}
-              <span className="font-medium text-primary">Refresh</span> to
-              create the first AI summary.
+              <span className="font-medium text-accent">Refresh</span> to
+              create the first AI synthesis.
             </p>
           )}
 
           {brief && !isLoading && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {showRefreshSpinner && (
-                <p className="text-xs text-primary/80">Updating…</p>
+                <p className="text-xs font-medium text-success">Updating…</p>
               )}
-              <p className="text-sm leading-relaxed text-slate-100">
+              <p className="text-sm leading-relaxed text-foreground sm:text-base">
                 {brief.market_summary}
               </p>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                <div className="space-y-2 rounded-xl border border-border/60 bg-card/80 p-4 shadow-soft backdrop-blur dark:border-border/50 dark:bg-card/40 dark:shadow-none">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-success">
                     Drivers
                   </p>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {brief.drivers.map((d, i) => (
                       <li key={i} className="flex gap-2">
-                        <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+                        <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-success/80" />
                         <span>{d}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="space-y-1.5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-red-400">
+                <div className="space-y-2 rounded-xl border border-border/60 bg-card/80 p-4 shadow-soft backdrop-blur dark:border-border/50 dark:bg-card/40 dark:shadow-none">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-danger">
                     Risks
                   </p>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     {brief.risks.map((r, i) => (
                       <li key={i} className="flex gap-2">
-                        <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-red-400/80" />
+                        <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-danger/80" />
                         <span>{r}</span>
                       </li>
                     ))}
@@ -223,26 +239,29 @@ export function AiMarketBriefCard() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1 text-slate-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  Confidence: {(brief.confidence * 100).toFixed(0)}%
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/60 px-2.5 py-1 text-slate-300">
-                  Sources: {brief.sources.length ?? "n/a"}
-                </span>
-                <button
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatPill tone={confidenceTone} dot>
+                    Confidence · {(brief.confidence * 100).toFixed(0)}%
+                  </StatPill>
+                  <StatPill tone="neutral">
+                    {brief.sources.length ?? 0} sources
+                  </StatPill>
+                </div>
+                <Button
+                  type="button"
+                  variant="default"
                   onClick={() => setDrawerOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:border-primary/50 hover:bg-primary/20 hover:shadow-sm hover:shadow-primary/10"
+                  className="w-full shrink-0 rounded-full font-semibold shadow-md sm:w-auto"
                 >
-                  <Eye className="h-3.5 w-3.5" />
+                  <Eye className="h-4 w-4" />
                   How this brief was built
-                </button>
+                </Button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <MarketBriefDebugDrawer
         open={drawerOpen}

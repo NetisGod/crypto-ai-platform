@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { MarketChartCard } from "@/components/dashboard/market-chart-card";
 import { MarketNews } from "@/components/dashboard/MarketNews";
@@ -11,7 +10,9 @@ import { useMarketPrices } from "@/hooks/use-market-prices";
 import { formatCompactNum } from "@/data/mock-data";
 import type { TokenSummary } from "@/data/mock-data";
 import { TrendingUp, DollarSign, BarChart3, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { GlowCard } from "@/components/ui/glow-card";
+import { cn } from "@/lib/utils";
 import { MOCK_TOKENS } from "@/data/mock-data";
 
 type DashboardData = {
@@ -61,15 +62,16 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">
-          Market overview and key metrics at a glance
-        </p>
-      </div>
+    <div className="space-y-10">
+      <SectionHeading
+        eyebrow="Market Overview"
+        live
+        title="Market intelligence, at a glance."
+        description="Live market structure, AI-generated briefings, and real-time signals across the assets you care about."
+        size="lg"
+      />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="BTC Price"
           value={btcPrice != null ? `$${btcPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}` : "—"}
@@ -108,50 +110,58 @@ export default function DashboardPage() {
       <AiMarketBriefCard />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <MarketChartCard />
         </div>
         <MarketNews />
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Top movers</CardTitle>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/app/token/BTC">
-              View all <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            {topMovers.map((token) => (
+      <GlowCard padding="md" noHoverBlob>
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
+              Top movers
+            </h2>
+            <span className="text-xs text-muted-foreground">· 24h</span>
+          </div>
+          <Link
+            href="/app/token/BTC"
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View all <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {topMovers.map((token) => {
+            const positive = token.change24h >= 0;
+            return (
               <Link
                 key={token.symbol}
                 href={`/app/token/${token.symbol}`}
-                className="flex min-w-[140px] items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+                className="group flex flex-col gap-1 rounded-xl border border-border/60 bg-card/60 p-3 backdrop-blur transition-all hover:border-accent/40 hover:bg-card hover:shadow-soft"
               >
-                <div>
-                  <p className="font-semibold">{token.symbol}</p>
-                  <p
-                    className={
-                      token.change24h >= 0
-                        ? "text-sm text-emerald-500"
-                        : "text-sm text-red-500"
-                    }
-                  >
-                    {token.change24h >= 0 ? "+" : ""}
-                    {token.change24h.toFixed(2)}%
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold tracking-tight text-foreground">
+                    {token.symbol}
                   </p>
+                  <span
+                    className={cn(
+                      "text-xs font-medium tabular-nums",
+                      positive ? "text-success" : "text-danger",
+                    )}
+                  >
+                    {positive ? "+" : ""}
+                    {token.change24h.toFixed(2)}%
+                  </span>
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm tabular-nums text-muted-foreground">
                   ${token.price.toLocaleString()}
                 </p>
               </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            );
+          })}
+        </div>
+      </GlowCard>
     </div>
   );
 }

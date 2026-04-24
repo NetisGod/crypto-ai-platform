@@ -1,5 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { AppShell } from "@/components/theme/app-shell";
 
 export default function AppLayout({
   children,
@@ -7,12 +9,29 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dark flex h-screen overflow-hidden bg-background bg-grid-pattern">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <ThemeProvider>
+      <AppShell>
+        {/* Background layers: grid fade + soft colored blobs, both
+           purely decorative and non-interactive. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-grid-fade"
+        />
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-accent/10 blur-3xl" />
+          <div className="absolute -bottom-40 right-0 h-[520px] w-[520px] rounded-full bg-primary/10 blur-3xl" />
+        </div>
+
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <Header />
+          <main className="relative flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </main>
+        </div>
+      </AppShell>
+    </ThemeProvider>
   );
 }

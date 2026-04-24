@@ -1,18 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { RefreshCw, TrendingUp, Zap, AlertTriangle, X, Check, Loader2 } from "lucide-react";
+import {
+  RefreshCw,
+  TrendingUp,
+  Zap,
+  AlertTriangle,
+  X,
+  Check,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import type {
   NarrativeItem,
   NarrativeTokenRef,
   NarrativeStatus,
 } from "@/services/narratives/types";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { GlowCard } from "@/components/ui/glow-card";
+import { StatPill, type StatPillTone } from "@/components/ui/stat-pill";
 
 // ---------------------------------------------------------------------------
 // API response shapes
@@ -46,33 +55,24 @@ const REFRESH_STEPS = [
   "Finalizing",
 ] as const;
 
-const STATUS_CONFIG: Record<NarrativeStatus, { label: string; className: string }> = {
-  active: {
-    label: "Active",
-    className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-  },
-  emerging: {
-    label: "Emerging",
-    className: "border-sky-500/40 bg-sky-500/10 text-sky-400",
-  },
-  peaking: {
-    label: "Peaking",
-    className: "border-amber-500/40 bg-amber-500/10 text-amber-400",
-  },
-  fading: {
-    label: "Fading",
-    className: "border-slate-500/40 bg-slate-500/10 text-slate-400",
-  },
+const STATUS_CONFIG: Record<
+  NarrativeStatus,
+  { label: string; tone: StatPillTone }
+> = {
+  active: { label: "Active", tone: "success" },
+  emerging: { label: "Emerging", tone: "accent" },
+  peaking: { label: "Peaking", tone: "warning" },
+  fading: { label: "Fading", tone: "neutral" },
 };
 
 function tokenBadgeClass(role: NarrativeTokenRef["role"]): string {
   switch (role) {
     case "leader":
-      return "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25";
+      return "border-success/30 bg-success/10 text-success hover:bg-success/20";
     case "laggard":
-      return "bg-red-500/15 text-red-400 hover:bg-red-500/25";
+      return "border-danger/30 bg-danger/10 text-danger hover:bg-danger/20";
     default:
-      return "bg-primary/15 text-primary hover:bg-primary/25";
+      return "border-accent/30 bg-accent/10 text-accent hover:bg-accent/20";
   }
 }
 
@@ -87,7 +87,8 @@ export default function NarrativesPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshStep, setRefreshStep] = useState(0);
-  const [selectedNarrative, setSelectedNarrative] = useState<NarrativeItem | null>(null);
+  const [selectedNarrative, setSelectedNarrative] =
+    useState<NarrativeItem | null>(null);
 
   const loadCached = useCallback(async () => {
     setStatus("loading");
@@ -147,7 +148,6 @@ export default function NarrativesPage() {
     void loadCached();
   }, [loadCached]);
 
-  // Advance progress steps while refreshing (simulated for UX feedback)
   useEffect(() => {
     if (!isRefreshing) return;
     const advance = () =>
@@ -161,135 +161,128 @@ export default function NarrativesPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Narratives</h1>
-          <p className="mt-1 text-muted-foreground">
-            Market narratives driving sentiment and flows
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void refresh()}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
-              Generating…
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5">
-              <RefreshCw className="h-3 w-3" />
-              Refresh
-            </span>
-          )}
-        </Button>
-      </div>
+      <SectionHeading
+        eyebrow="Narratives"
+        title="Market narratives driving flows."
+        description="AI-detected themes connecting price action, news, and crowd behavior across the market."
+        actions={
+          <Button
+            variant="glass"
+            size="sm"
+            onClick={() => void refresh()}
+            disabled={isRefreshing}
+            className="rounded-full"
+          >
+            {isRefreshing ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="h-3 w-3 animate-spin text-accent" />
+                Generating…
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <RefreshCw className="h-3 w-3" />
+                Refresh
+              </span>
+            )}
+          </Button>
+        }
+      />
 
-      {/* Refresh progress steps */}
       {isRefreshing && (
-        <Card className="border-primary/30">
-          <CardContent className="p-6">
-            <p className="mb-4 text-sm font-medium text-muted-foreground">
-              Generating narratives…
-            </p>
-            <ul className="space-y-3">
-              {REFRESH_STEPS.map((label, i) => {
-                const done = i < refreshStep;
-                const current = i === refreshStep;
-                return (
-                  <li
-                    key={label}
-                    className={cn(
-                      "flex items-center gap-3 text-sm",
-                      done && "text-muted-foreground",
-                      current && "font-medium text-foreground",
-                      !done && !current && "text-muted-foreground/60",
-                    )}
-                  >
-                    {done ? (
-                      <Check className="h-4 w-4 shrink-0 text-emerald-500" />
-                    ) : current ? (
-                      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
-                    ) : (
-                      <span className="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/30" />
-                    )}
-                    <span>{label}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-        </Card>
+        <GlowCard variant="gradient" padding="md" noHoverBlob>
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+            Generating narratives…
+          </p>
+          <ul className="space-y-3">
+            {REFRESH_STEPS.map((label, i) => {
+              const done = i < refreshStep;
+              const current = i === refreshStep;
+              return (
+                <li
+                  key={label}
+                  className={cn(
+                    "flex items-center gap-3 text-sm",
+                    done && "text-muted-foreground",
+                    current && "font-medium text-foreground",
+                    !done && !current && "text-muted-foreground/60",
+                  )}
+                >
+                  {done ? (
+                    <Check className="h-4 w-4 shrink-0 text-success" />
+                  ) : current ? (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-accent" />
+                  ) : (
+                    <span className="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/30" />
+                  )}
+                  <span>{label}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </GlowCard>
       )}
 
-      {/* Loading skeleton */}
       {isLoading && (
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-3">
-                <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="h-4 w-full animate-pulse rounded bg-muted/60" />
-                <div className="h-4 w-5/6 animate-pulse rounded bg-muted/60" />
+            <GlowCard key={i} padding="md" noHoverBlob>
+              <div className="space-y-3">
+                <div className="h-5 w-2/3 rounded animate-shimmer" />
+                <div className="h-4 w-full rounded animate-shimmer" />
+                <div className="h-4 w-5/6 rounded animate-shimmer" />
                 <div className="flex gap-2">
-                  <div className="h-6 w-12 animate-pulse rounded-full bg-muted/40" />
-                  <div className="h-6 w-12 animate-pulse rounded-full bg-muted/40" />
-                  <div className="h-6 w-12 animate-pulse rounded-full bg-muted/40" />
+                  <div className="h-6 w-12 rounded-full animate-shimmer" />
+                  <div className="h-6 w-12 rounded-full animate-shimmer" />
+                  <div className="h-6 w-12 rounded-full animate-shimmer" />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </GlowCard>
           ))}
         </div>
       )}
 
-      {/* Error */}
       {status === "error" && (
-        <Card className="border-red-500/30">
-          <CardContent className="flex items-center gap-3 p-6 text-sm text-red-400">
+        <GlowCard
+          padding="md"
+          noHoverBlob
+          className="border-danger/30 bg-danger/5"
+        >
+          <div className="flex items-center gap-3 text-sm text-danger">
             <AlertTriangle className="h-5 w-5 shrink-0" />
             <div>
               <p className="font-medium">Generation failed</p>
-              <p className="mt-0.5 text-red-400/80">
+              <p className="mt-0.5 text-danger/80">
                 {errorMessage ?? "Please try again."}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </GlowCard>
       )}
 
-      {/* Empty */}
       {showEmpty && !isLoading && (
-        <Card>
-          <CardContent className="p-6 text-center text-sm text-muted-foreground">
-            <Zap className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
-            <p>
+        <GlowCard padding="lg" noHoverBlob>
+          <div className="text-center">
+            <Zap className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">
               No narratives generated yet. Click{" "}
-              <Button
-                variant="link"
-                size="sm"
-                className="h-auto p-0 font-medium text-primary"
+              <button
+                type="button"
                 onClick={() => void refresh()}
                 disabled={isRefreshing}
+                className="font-medium text-accent hover:underline disabled:opacity-60"
               >
                 Refresh
-              </Button>{" "}
+              </button>{" "}
               to run the first analysis.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </GlowCard>
       )}
 
-      {/* Narrative cards */}
       {narratives && narratives.length > 0 && !isLoading && (
         <>
           {isRefreshing && (
-            <p className="text-xs text-primary/80">Updating narratives…</p>
+            <p className="text-xs text-accent/80">Updating narratives…</p>
           )}
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -304,8 +297,7 @@ export default function NarrativesPage() {
 
           {updatedAt && (
             <p className="text-xs text-muted-foreground/60">
-              Last updated:{" "}
-              {new Date(updatedAt).toLocaleString()}
+              Last updated: {new Date(updatedAt).toLocaleString()}
             </p>
           )}
         </>
@@ -338,38 +330,45 @@ function NarrativeCard({
   ];
 
   return (
-    <Card
-      className="cursor-pointer transition-colors hover:border-primary/30"
+    <GlowCard
+      padding="md"
       onClick={() => onSelect(n)}
+      className="cursor-pointer"
     >
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-        <div className="space-y-1">
-          <CardTitle className="text-base font-medium">{n.title}</CardTitle>
-          <Badge variant="outline" className={statusCfg.className}>
+      <div className="flex flex-row items-start justify-between pb-3">
+        <div className="min-w-0 space-y-2">
+          <h3 className="text-base font-semibold tracking-tight text-foreground">
+            {n.title}
+          </h3>
+          <StatPill tone={statusCfg.tone} dot pulse={n.status === "active"}>
             {statusCfg.label}
-          </Badge>
+          </StatPill>
         </div>
-        <TrendingUp className="h-5 w-5 text-muted-foreground/50" />
-      </CardHeader>
+        <TrendingUp className="h-5 w-5 shrink-0 text-muted-foreground/50" />
+      </div>
 
-      <CardContent className="space-y-4">
+      <div className="space-y-4">
         <p className="text-sm leading-relaxed text-muted-foreground">
           {n.summary}
         </p>
 
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-5">
           <div>
-            <p className="text-xs text-muted-foreground">Strength</p>
-            <div className="mt-0.5 h-2 w-24 overflow-hidden rounded-full bg-muted">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Strength
+            </p>
+            <div className="mt-1 h-2 w-28 overflow-hidden rounded-full bg-muted/60">
               <div
-                className="h-full rounded-full bg-primary"
+                className="h-full rounded-full bg-gradient-primary"
                 style={{ width: `${Math.min(n.strengthScore, 100)}%` }}
               />
             </div>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Confidence</p>
-            <p className="text-sm font-medium">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Confidence
+            </p>
+            <p className="mt-0.5 text-sm font-semibold tabular-nums text-foreground">
               {(n.confidenceScore * 100).toFixed(0)}%
             </p>
           </div>
@@ -380,17 +379,20 @@ function NarrativeCard({
             {allTokens.map((t) => (
               <Link
                 key={`${t.symbol}-${t.role}`}
-                href={`/token/${t.symbol}`}
+                href={`/app/token/${t.symbol}`}
                 onClick={(e) => e.stopPropagation()}
-                className={`rounded px-2 py-1 text-xs font-medium ${tokenBadgeClass(t.role)}`}
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
+                  tokenBadgeClass(t.role),
+                )}
               >
                 {t.symbol}
               </Link>
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </GlowCard>
   );
 }
 
@@ -433,72 +435,69 @@ function NarrativeDetailDrawer({
       <div
         className={cn(
           "relative z-10 flex w-full max-w-xl flex-col",
-          "border-l border-slate-800 bg-slate-950 shadow-2xl",
+          "border-l border-border/60 bg-background shadow-elegant",
           "animate-in slide-in-from-right duration-200",
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-sm font-semibold tracking-tight text-slate-100">
+        <div className="flex items-center justify-between border-b border-border/60 bg-card/60 px-5 py-4 backdrop-blur">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <h2 className="truncate text-sm font-semibold tracking-tight text-foreground">
               {n.title}
             </h2>
-            <Badge variant="outline" className={cn("text-[10px]", statusCfg.className)}>
+            <StatPill tone={statusCfg.tone} dot pulse={n.status === "active"}>
               {statusCfg.label}
-            </Badge>
+            </StatPill>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Content */}
         <ScrollArea className="flex-1">
           <div className="space-y-5 p-5">
-            {/* Scores bar */}
-            <div className="flex flex-wrap gap-2 text-[11px] text-slate-400">
-              <span className="rounded bg-slate-900 px-2 py-0.5">
-                Strength: {n.strengthScore.toFixed(0)}/100
-              </span>
+            <div className="flex flex-wrap gap-1.5">
+              <StatPill tone="neutral">
+                Strength · {n.strengthScore.toFixed(0)}/100
+              </StatPill>
               <ConfidencePill value={n.confidenceScore} />
-              <span className="rounded bg-slate-900 px-2 py-0.5">
-                Updated: {new Date(n.updatedAt).toLocaleString()}
-              </span>
+              <StatPill tone="neutral">
+                Updated · {new Date(n.updatedAt).toLocaleString()}
+              </StatPill>
             </div>
 
-            {/* Thesis */}
             <DrawerSection title="Thesis">
-              <p className="text-[11px] leading-relaxed text-slate-300">
+              <p className="text-[11px] leading-relaxed text-foreground/80">
                 {n.thesis}
               </p>
             </DrawerSection>
 
-            {/* Supporting signals */}
             {n.supportingSignals.length > 0 && (
               <DrawerSection title="Supporting Signals">
                 <ul className="space-y-2">
                   {n.supportingSignals.map((s, i) => (
                     <li key={i} className="text-[11px]">
-                      <span className="font-medium text-slate-200">
+                      <span className="font-semibold text-foreground">
                         {s.label}
                       </span>
-                      <p className="mt-0.5 text-slate-400">{s.explanation}</p>
+                      <p className="mt-0.5 text-muted-foreground">
+                        {s.explanation}
+                      </p>
                     </li>
                   ))}
                 </ul>
               </DrawerSection>
             )}
 
-            {/* Risk signals */}
             {n.riskSignals.length > 0 && (
               <DrawerSection title="Risk Signals">
-                <ul className="space-y-1.5 text-[11px] text-slate-300">
+                <ul className="space-y-1.5 text-[11px] text-foreground/80">
                   {n.riskSignals.map((r, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-red-400/70" />
+                      <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-danger/80" />
                       <span>{r}</span>
                     </li>
                   ))}
@@ -506,13 +505,12 @@ function NarrativeDetailDrawer({
               </DrawerSection>
             )}
 
-            {/* Catalysts */}
             {n.catalysts.length > 0 && (
               <DrawerSection title="Catalysts">
-                <ul className="space-y-1.5 text-[11px] text-slate-300">
+                <ul className="space-y-1.5 text-[11px] text-foreground/80">
                   {n.catalysts.map((c, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-amber-400/70" />
+                      <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-warning/80" />
                       <span>{c}</span>
                     </li>
                   ))}
@@ -520,7 +518,6 @@ function NarrativeDetailDrawer({
               </DrawerSection>
             )}
 
-            {/* Tokens */}
             <DrawerSection title="Leader Tokens">
               <TokenList tokens={n.leaderTokens} />
             </DrawerSection>
@@ -555,8 +552,8 @@ function DrawerSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-800/80 bg-slate-900/40 p-4">
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+    <div className="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur">
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </p>
       {children}
@@ -566,32 +563,29 @@ function DrawerSection({
 
 function ConfidencePill({ value }: { value: number }) {
   const pct = (value * 100).toFixed(0);
-  const color =
-    value >= 0.7
-      ? "text-emerald-400"
-      : value >= 0.4
-        ? "text-amber-400"
-        : "text-red-400";
+  const tone: StatPillTone =
+    value >= 0.7 ? "success" : value >= 0.4 ? "warning" : "danger";
   return (
-    <span className={cn("rounded bg-slate-900 px-2 py-0.5", color)}>
-      Confidence: {pct}%
-    </span>
+    <StatPill tone={tone} dot>
+      Confidence · {pct}%
+    </StatPill>
   );
 }
 
 function TokenList({ tokens }: { tokens: NarrativeTokenRef[] }) {
   if (tokens.length === 0) {
-    return (
-      <p className="text-[11px] text-slate-500">None</p>
-    );
+    return <p className="text-[11px] text-muted-foreground/70">None</p>;
   }
   return (
     <div className="flex flex-wrap gap-1.5">
       {tokens.map((t) => (
         <Link
           key={`${t.symbol}-${t.role}`}
-          href={`/token/${t.symbol}`}
-          className={`rounded px-2 py-1 text-[11px] font-medium ${tokenBadgeClass(t.role)}`}
+          href={`/app/token/${t.symbol}`}
+          className={cn(
+            "rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
+            tokenBadgeClass(t.role),
+          )}
         >
           {t.symbol}
         </Link>

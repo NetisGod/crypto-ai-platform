@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 
@@ -9,48 +8,56 @@ interface TokenUnsupportedFallbackProps {
 
 const SUPPORTED_SYMBOLS = ["BTC", "ETH"] as const;
 
-export function TokenUnsupportedFallback({ symbol }: TokenUnsupportedFallbackProps) {
+export function TokenUnsupportedFallback({
+  symbol,
+}: TokenUnsupportedFallbackProps) {
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+      <div className="flex items-center gap-3">
+        <Button variant="glass" size="sm" asChild className="rounded-full">
           <Link href="/app">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Market Overview
           </Link>
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Token not supported</h1>
-          <p className="mt-1 text-muted-foreground">
-            <span className="font-medium">{symbol}</span> is not available yet.
-          </p>
-        </div>
       </div>
 
-      <Card className="border-amber-500/30 bg-amber-500/5">
-        <CardContent className="flex flex-col items-center gap-6 py-12">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10">
-            <AlertCircle className="h-7 w-7 text-amber-500" />
+      <div className="relative overflow-hidden rounded-2xl border border-warning/30 bg-gradient-hero p-8 shadow-elegant sm:p-12">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-warning/15 blur-3xl"
+        />
+        <div className="relative flex flex-col items-center gap-6 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-warning/10 ring-1 ring-warning/30">
+            <AlertCircle className="h-7 w-7 text-warning" />
           </div>
-          <div className="text-center space-y-2">
-            <p className="text-sm font-medium">
-              We currently support the following tokens:
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              Not available for AI token analysis
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{symbol}</span> is
+              not available yet. We currently support:
             </p>
-            <p className="text-muted-foreground text-sm">
-              {SUPPORTED_SYMBOLS.join(", ")}
+            <p className="text-sm font-semibold tracking-tight text-foreground">
+              {SUPPORTED_SYMBOLS.join(" · ")}
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             {SUPPORTED_SYMBOLS.map((sym) => (
-              <Button key={sym} variant="outline" asChild>
+              <Button
+                key={sym}
+                variant="glass"
+                size="sm"
+                asChild
+                className="rounded-full"
+              >
                 <Link href={`/app/token/${sym}`}>{sym}</Link>
               </Button>
             ))}
           </div>
-          <Button variant="secondary" asChild>
-            <Link href="/app">Back to Dashboard</Link>
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

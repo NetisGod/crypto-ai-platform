@@ -43,12 +43,12 @@ function formatYAxis(value: number): string {
 function ChartSkeleton() {
   return (
     <div className="h-[280px] w-full space-y-3">
-      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+      <div className="h-4 w-24 rounded animate-shimmer" />
       <div className="flex h-[230px] items-end gap-0.5">
         {Array.from({ length: 30 }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 animate-pulse rounded-t bg-muted/60"
+            className="flex-1 rounded-t animate-shimmer"
             style={{
               height: `${20 + Math.sin((i / 30) * Math.PI * 2) * 30 + ((i * 7 + 3) % 20)}%`,
               animationDelay: `${i * 15}ms`,
@@ -57,8 +57,8 @@ function ChartSkeleton() {
         ))}
       </div>
       <div className="flex justify-between">
-        <div className="h-3 w-12 animate-pulse rounded bg-muted/60" />
-        <div className="h-3 w-12 animate-pulse rounded bg-muted/60" />
+        <div className="h-3 w-12 rounded animate-shimmer" />
+        <div className="h-3 w-12 rounded animate-shimmer" />
       </div>
     </div>
   );
@@ -92,34 +92,41 @@ export function MarketChartCard({
   const tickInterval = getTickInterval(data.length, range);
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card
+      className={cn(
+        "overflow-hidden rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
       <CardHeader className="space-y-3 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/60 p-1 backdrop-blur">
             {ASSETS.map((a) => (
               <button
                 key={a}
                 onClick={() => handleAssetChange(a)}
                 className={cn(
-                  "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+                  "rounded-full px-3 py-1 text-xs font-semibold tracking-tight transition-colors",
                   asset === a
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {a}
               </button>
             ))}
           </div>
-          <div className="flex gap-1">
+          <div className="inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-card/60 p-0.5 backdrop-blur">
             {TIME_RANGES.map(({ label, value }) => (
               <Button
                 key={value}
                 size="sm"
-                variant={range === value ? "default" : "ghost"}
+                variant="ghost"
                 className={cn(
-                  "h-7 px-2.5 text-xs",
-                  range === value && "pointer-events-none"
+                  "h-7 rounded-full px-2.5 text-[11px]",
+                  range === value
+                    ? "pointer-events-none bg-accent/15 text-accent"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                 )}
                 onClick={() => handleRangeChange(value)}
               >
@@ -158,12 +165,12 @@ export function MarketChartCard({
                   >
                     <stop
                       offset="0%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.35}
+                      stopColor="hsl(var(--accent))"
+                      stopOpacity={0.4}
                     />
                     <stop
                       offset="100%"
-                      stopColor="hsl(var(--primary))"
+                      stopColor="hsl(var(--accent))"
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -206,7 +213,7 @@ export function MarketChartCard({
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--primary))"
+                  stroke="hsl(var(--accent))"
                   strokeWidth={2}
                   fill="url(#marketChartGradient)"
                   animationDuration={600}

@@ -9,7 +9,7 @@ export default function NotFound() {
         href="/app"
         className="text-primary underline underline-offset-4 hover:no-underline"
       >
-        Go to Dashboard
+        Go to Market Overview
       </Link>
     </div>
   );

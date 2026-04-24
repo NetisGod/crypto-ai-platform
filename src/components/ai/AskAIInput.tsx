@@ -1,12 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import { Send } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
 
 export interface AskAIInputProps {
   value: string;
@@ -15,8 +12,6 @@ export interface AskAIInputProps {
   onChange: (value: string) => void;
   onSubmit: (question: string) => void;
 }
-
-// ─── Component ─────────────────────────────────────────────────────────────────
 
 export function AskAIInput({
   value,
@@ -45,25 +40,28 @@ export function AskAIInput({
   };
 
   return (
-    <Card className="border border-primary/20 bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90">
-      <CardContent className="space-y-4 pt-6">
-        {/* Example prompt chips */}
-        <div className="flex flex-wrap gap-2">
-          {examplePrompts.map((prompt) => (
-            <button
-              key={prompt}
-              type="button"
-              onClick={() => handleChipClick(prompt)}
-              disabled={loading}
-              className="rounded-full border border-slate-700/60 bg-slate-900/50 px-3 py-1 text-xs text-slate-400 transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      {/* Composer — hero style */}
+      <div
+        className={cn(
+          "group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur transition-all",
+          "focus-within:border-accent/50 focus-within:shadow-glow",
+          loading && "border-accent/50",
+        )}
+      >
+        {/* Gradient border animation while loading */}
+        {loading && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-primary opacity-30 blur-md"
+          />
+        )}
 
-        {/* Textarea + submit */}
-        <form onSubmit={handleFormSubmit} className="flex gap-2">
+        <form
+          onSubmit={handleFormSubmit}
+          className="relative flex items-end gap-3 p-4"
+        >
+          <Sparkles className="mt-2 h-4 w-4 shrink-0 text-accent" />
           <textarea
             ref={textareaRef}
             value={value}
@@ -73,20 +71,20 @@ export function AskAIInput({
             rows={2}
             disabled={loading}
             className={cn(
-              "flex-1 resize-none rounded-md border border-slate-700/60 bg-slate-900/60 px-3 py-2",
-              "text-sm text-slate-100 placeholder:text-slate-500",
-              "focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30",
-              "disabled:cursor-not-allowed disabled:opacity-50",
+              "min-h-[44px] flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70",
+              "focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:text-base",
             )}
           />
           <Button
             type="submit"
+            variant="hero"
+            size="sm"
             disabled={loading || !value.trim()}
-            className="self-end"
+            className="shrink-0 rounded-full"
           >
             {loading ? (
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+                <span className="h-3 w-3 animate-spin rounded-full border border-primary-foreground border-t-transparent" />
                 Asking…
               </span>
             ) : (
@@ -97,11 +95,32 @@ export function AskAIInput({
             )}
           </Button>
         </form>
+      </div>
 
-        <p className="text-xs text-slate-600">
-          Press Enter to submit · Shift+Enter for new line
-        </p>
-      </CardContent>
-    </Card>
+      <p className="text-[11px] text-muted-foreground/70">
+        Press <kbd className="rounded border border-border/60 bg-card/60 px-1 py-px">Enter</kbd> to submit ·{" "}
+        <kbd className="rounded border border-border/60 bg-card/60 px-1 py-px">Shift</kbd>+
+        <kbd className="rounded border border-border/60 bg-card/60 px-1 py-px">Enter</kbd> for new line
+      </p>
+
+      {/* Example prompt chips — landing style */}
+      <div className="flex flex-wrap gap-2">
+        {examplePrompts.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => handleChipClick(prompt)}
+            disabled={loading}
+            className={cn(
+              "rounded-full border border-border/60 bg-card/60 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur transition-all",
+              "hover:border-accent/40 hover:bg-accent/10 hover:text-accent",
+              "disabled:pointer-events-none disabled:opacity-40",
+            )}
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

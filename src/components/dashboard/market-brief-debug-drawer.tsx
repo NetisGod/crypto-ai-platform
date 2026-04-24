@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -106,30 +107,37 @@ export function MarketBriefDebugDrawer({ open, onClose, debugJson }: Props) {
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex justify-end">
+      {/* Backdrop — portal + z above sticky app header (z-20) */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden
       />
 
       {/* Panel */}
       <div
         className={cn(
-          "relative z-10 flex w-full max-w-xl flex-col",
-          "border-l border-slate-800 bg-slate-950 shadow-2xl",
+          "relative z-10 flex h-full min-h-0 w-full max-w-xl flex-col",
+          "border-l border-border/60 bg-background shadow-elegant",
           "animate-in slide-in-from-right duration-200",
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-          <h2 className="text-sm font-semibold tracking-tight text-slate-100">
-            How this brief was built
-          </h2>
+        <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-5 py-4 backdrop-blur dark:bg-card/60">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <Layers className="h-3.5 w-3.5" />
+            </div>
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">
+              How this brief was built
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
@@ -139,7 +147,7 @@ export function MarketBriefDebugDrawer({ open, onClose, debugJson }: Props) {
         <ScrollArea className="flex-1">
           <div className="space-y-3 p-5">
             {!debugJson ? (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 No agent-level data available for this brief. It may have been
                 generated before multi-agent tracing was enabled.
               </p>
@@ -206,7 +214,8 @@ export function MarketBriefDebugDrawer({ open, onClose, debugJson }: Props) {
           </div>
         </ScrollArea>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -216,32 +225,22 @@ export function MarketBriefDebugDrawer({ open, onClose, debugJson }: Props) {
 
 function MetaBar({ meta }: { meta?: DebugMeta }) {
   if (!meta) return null;
+  const pillClass =
+    "rounded-full border border-border/60 bg-muted/50 px-2 py-0.5 backdrop-blur dark:bg-card/60";
   return (
-    <div className="mb-4 flex flex-wrap gap-2 text-[11px] text-slate-400">
-      {meta.model && (
-        <span className="rounded bg-slate-900 px-2 py-0.5">
-          Model: {meta.model}
-        </span>
-      )}
+    <div className="mb-4 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+      {meta.model && <span className={pillClass}>Model: {meta.model}</span>}
       {meta.latencyMs != null && (
-        <span className="rounded bg-slate-900 px-2 py-0.5">
-          {(meta.latencyMs / 1000).toFixed(1)}s
-        </span>
+        <span className={pillClass}>{(meta.latencyMs / 1000).toFixed(1)}s</span>
       )}
       {meta.agentCoverage && (
-        <span className="rounded bg-slate-900 px-2 py-0.5">
-          {meta.agentCoverage.length}/4 agents
-        </span>
+        <span className={pillClass}>{meta.agentCoverage.length}/4 agents</span>
       )}
       {meta.snapshotCount != null && (
-        <span className="rounded bg-slate-900 px-2 py-0.5">
-          {meta.snapshotCount} snapshots
-        </span>
+        <span className={pillClass}>{meta.snapshotCount} snapshots</span>
       )}
       {meta.newsCount != null && (
-        <span className="rounded bg-slate-900 px-2 py-0.5">
-          {meta.newsCount} news
-        </span>
+        <span className={pillClass}>{meta.newsCount} news</span>
       )}
     </div>
   );
@@ -259,16 +258,16 @@ function AgentSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-800/80 bg-slate-900/40 p-4">
+    <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-soft backdrop-blur dark:bg-card/60 dark:shadow-none">
       <div className="mb-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-200">
-          <span className="text-primary/80">{icon}</span>
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-tight text-foreground">
+          <span className="text-accent">{icon}</span>
           {title}
         </div>
         {!available && (
           <Badge
             variant="outline"
-            className="border-slate-700 text-[10px] text-slate-500"
+            className="border-border/60 text-[10px] text-muted-foreground"
           >
             unavailable
           </Badge>
@@ -277,7 +276,7 @@ function AgentSection({
       {available ? (
         children
       ) : (
-        <p className="text-[11px] text-slate-600">
+        <p className="text-[11px] text-muted-foreground/70">
           This agent did not produce output for this brief.
         </p>
       )}
@@ -289,10 +288,10 @@ function ConfidenceBadge({ value }: { value: number }) {
   const pct = (value * 100).toFixed(0);
   const color =
     value >= 0.7
-      ? "text-emerald-400 border-emerald-400/30"
+      ? "text-success border-success/40"
       : value >= 0.4
-        ? "text-amber-400 border-amber-400/30"
-        : "text-red-400 border-red-400/30";
+        ? "text-warning border-warning/40"
+        : "text-danger border-danger/40";
   return (
     <Badge variant="outline" className={cn("text-[10px]", color)}>
       {pct}% confidence
@@ -300,9 +299,15 @@ function ConfidenceBadge({ value }: { value: number }) {
   );
 }
 
-function BulletList({ items, color = "bg-slate-500" }: { items: string[]; color?: string }) {
+function BulletList({
+  items,
+  color = "bg-muted-foreground",
+}: {
+  items: string[];
+  color?: string;
+}) {
   return (
-    <ul className="space-y-1.5 text-[11px] text-slate-300">
+    <ul className="space-y-1.5 text-[11px] text-foreground/80">
       {items.map((item, i) => (
         <li key={i} className="flex gap-2">
           <span className={cn("mt-[5px] h-1 w-1 shrink-0 rounded-full", color)} />
@@ -315,7 +320,7 @@ function BulletList({ items, color = "bg-slate-500" }: { items: string[]; color?
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
       {children}
     </p>
   );
@@ -329,19 +334,19 @@ function MarketDataSection({ data }: { data: MarketDataAnalysis }) {
   return (
     <div className="space-y-3 text-[11px]">
       <div className="flex items-center justify-between">
-        <span className="text-slate-400">
+        <span className="text-muted-foreground">
           Momentum:{" "}
-          <span className="font-medium text-slate-200">{data.market_momentum}</span>
+          <span className="font-medium text-foreground">{data.market_momentum}</span>
         </span>
         <ConfidenceBadge value={data.confidence} />
       </div>
       <div>
         <FieldLabel>Market Structure</FieldLabel>
-        <p className="text-slate-300">{data.market_structure}</p>
+        <p className="text-foreground/80">{data.market_structure}</p>
       </div>
       <div>
         <FieldLabel>Key Signals</FieldLabel>
-        <BulletList items={data.key_signals} color="bg-sky-400/70" />
+        <BulletList items={data.key_signals} color="bg-info/80" />
       </div>
     </div>
   );
@@ -354,10 +359,10 @@ function NewsSection({ data }: { data: NewsAnalysis }) {
         <FieldLabel>Summary</FieldLabel>
         <ConfidenceBadge value={data.confidence} />
       </div>
-      <p className="text-slate-300">{data.news_summary}</p>
+      <p className="text-foreground/80">{data.news_summary}</p>
       <div>
         <FieldLabel>Main Drivers</FieldLabel>
-        <BulletList items={data.main_drivers} color="bg-emerald-400/70" />
+        <BulletList items={data.main_drivers} color="bg-success/80" />
       </div>
       {data.source_titles.length > 0 && (
         <div>
@@ -366,7 +371,7 @@ function NewsSection({ data }: { data: NewsAnalysis }) {
             {data.source_titles.map((s, i) => (
               <span
                 key={i}
-                className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400"
+                className="rounded-full border border-border/60 bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur dark:bg-card/60"
               >
                 {s}
               </span>
@@ -385,10 +390,10 @@ function NarrativeSection({ data }: { data: NarrativeAnalysis }) {
         <FieldLabel>Summary</FieldLabel>
         <ConfidenceBadge value={data.confidence} />
       </div>
-      <p className="text-slate-300">{data.narrative_summary}</p>
+      <p className="text-foreground/80">{data.narrative_summary}</p>
       <div>
         <FieldLabel>Top Narratives</FieldLabel>
-        <BulletList items={data.top_narratives} color="bg-violet-400/70" />
+        <BulletList items={data.top_narratives} color="bg-ai/80" />
       </div>
       {data.affected_tokens.length > 0 && (
         <div>
@@ -397,7 +402,7 @@ function NarrativeSection({ data }: { data: NarrativeAnalysis }) {
             {data.affected_tokens.map((t, i) => (
               <span
                 key={i}
-                className="rounded bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-medium text-violet-300"
+                className="rounded bg-ai/15 px-1.5 py-0.5 text-[10px] font-medium text-ai"
               >
                 {t}
               </span>
@@ -422,15 +427,15 @@ function RiskSection({ data }: { data: RiskAnalysis }) {
             : "Low";
   const severityColor =
     data.severity >= 0.6
-      ? "text-red-400"
+      ? "text-danger"
       : data.severity >= 0.4
-        ? "text-amber-400"
-        : "text-emerald-400";
+        ? "text-warning"
+        : "text-success";
 
   return (
     <div className="space-y-3 text-[11px]">
       <div className="flex items-center justify-between">
-        <span className="text-slate-400">
+        <span className="text-muted-foreground">
           Severity:{" "}
           <span className={cn("font-medium", severityColor)}>
             {severityLabel} ({(data.severity * 100).toFixed(0)}%)
@@ -440,11 +445,11 @@ function RiskSection({ data }: { data: RiskAnalysis }) {
       </div>
       <div>
         <FieldLabel>Risk Summary</FieldLabel>
-        <p className="text-slate-300">{data.risk_summary}</p>
+        <p className="text-foreground/80">{data.risk_summary}</p>
       </div>
       <div>
         <FieldLabel>Top Risks</FieldLabel>
-        <BulletList items={data.top_risks} color="bg-red-400/70" />
+        <BulletList items={data.top_risks} color="bg-danger/80" />
       </div>
     </div>
   );
@@ -457,15 +462,15 @@ function SynthesizerSection({ data }: { data: SynthesizedBrief }) {
         <FieldLabel>Synthesized Summary</FieldLabel>
         <ConfidenceBadge value={data.confidence} />
       </div>
-      <p className="text-slate-300">{data.market_summary}</p>
+      <p className="text-foreground/80">{data.market_summary}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <FieldLabel>Drivers</FieldLabel>
-          <BulletList items={data.drivers} color="bg-emerald-400/70" />
+          <BulletList items={data.drivers} color="bg-success/80" />
         </div>
         <div>
           <FieldLabel>Risks</FieldLabel>
-          <BulletList items={data.risks} color="bg-red-400/70" />
+          <BulletList items={data.risks} color="bg-danger/80" />
         </div>
       </div>
       {data.sources.length > 0 && (
@@ -475,7 +480,7 @@ function SynthesizerSection({ data }: { data: SynthesizedBrief }) {
             {data.sources.map((s, i) => (
               <span
                 key={i}
-                className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400"
+                className="rounded-full border border-border/60 bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur dark:bg-card/60"
               >
                 {s}
               </span>
@@ -503,13 +508,13 @@ function ValidationSection({
 
   return (
     <>
-      <Separator className="bg-slate-800" />
-      <div className="rounded-lg border border-slate-800/80 bg-slate-900/40 p-4">
-        <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-200">
+      <Separator className="bg-border/60" />
+      <div className="rounded-xl border border-border/60 bg-muted/40 p-4 shadow-soft backdrop-blur dark:bg-card/60 dark:shadow-none">
+        <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-tight text-foreground">
           {passed ? (
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
           ) : (
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           )}
           Validation
           <Badge
@@ -517,25 +522,27 @@ function ValidationSection({
             className={cn(
               "ml-auto text-[10px]",
               passed
-                ? "border-emerald-400/30 text-emerald-400"
-                : "border-amber-400/30 text-amber-400",
+                ? "border-success/40 text-success"
+                : "border-warning/40 text-warning",
             )}
           >
-            {passed ? "passed" : `${allIssues.length} issue${allIssues.length === 1 ? "" : "s"}`}
+            {passed
+              ? "passed"
+              : `${allIssues.length} issue${allIssues.length === 1 ? "" : "s"}`}
           </Badge>
         </div>
         {allIssues.length > 0 && (
-          <ul className="space-y-1 text-[11px] text-amber-300/80">
+          <ul className="space-y-1 text-[11px] text-warning">
             {allIssues.map((issue, i) => (
               <li key={i} className="flex gap-2">
-                <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-amber-400/60" />
+                <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-warning/70" />
                 <span>{issue}</span>
               </li>
             ))}
           </ul>
         )}
         {allIssues.length === 0 && (
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-muted-foreground/70">
             All quality checks passed.
           </p>
         )}

@@ -79,15 +79,22 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
   const isFiltered = filtered.length < allNews.length;
 
   return (
-    <Card className={cn("flex flex-col", className)}>
+    <Card
+      className={cn(
+        "flex min-w-0 flex-col rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-2">
-          <Newspaper className="h-4 w-4 text-muted-foreground" />
-          <CardTitle className="text-base font-medium">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <Newspaper className="h-3.5 w-3.5" />
+          </div>
+          <CardTitle className="text-base font-semibold tracking-tight">
             {symbol} News
           </CardTitle>
           {status === "idle" && isFiltered && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
               filtered
             </span>
           )}
@@ -95,7 +102,7 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
         {status === "idle" && (
           <button
             onClick={() => void fetchNews()}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Refresh news"
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -117,7 +124,7 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
                 setStatus("loading");
                 void fetchNews();
               }}
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-accent hover:underline"
             >
               Try again
             </button>
@@ -133,17 +140,17 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
         )}
 
         {status === "idle" && displayed.length > 0 && (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/60">
             {displayed.map((item, i) => (
               <a
                 key={`${item.url}-${i}`}
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-start gap-3 px-6 py-3.5 transition-colors hover:bg-muted/50"
+                className="group flex items-start gap-3 px-6 py-3.5 transition-colors hover:bg-muted/40"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium leading-snug text-foreground line-clamp-2 group-hover:text-primary">
+                  <p className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-accent">
                     {item.title}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -152,14 +159,14 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
                     {timeAgo(item.published_at)}
                   </p>
                 </div>
-                <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-primary" />
+                <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-accent" />
               </a>
             ))}
           </div>
         )}
 
         {status === "idle" && !isFiltered && displayed.length > 0 && (
-          <div className="border-t border-border px-6 py-2.5">
+          <div className="border-t border-border/60 px-6 py-2.5">
             <p className="text-[11px] text-muted-foreground">
               Showing latest crypto news — no {symbol}-specific articles found
             </p>
@@ -172,11 +179,11 @@ export function TokenNews({ symbol, className }: TokenNewsProps) {
 
 function LoadingSkeleton() {
   return (
-    <div className="divide-y divide-border">
+    <div className="divide-y divide-border/60">
       {Array.from({ length: MAX_ITEMS }).map((_, i) => (
         <div key={i} className="px-6 py-3.5">
-          <div className="h-4 w-11/12 animate-pulse rounded bg-muted" />
-          <div className="mt-2 h-3 w-1/3 animate-pulse rounded bg-muted/60" />
+          <div className="h-4 w-11/12 rounded animate-shimmer" />
+          <div className="mt-2 h-3 w-1/3 rounded animate-shimmer" />
         </div>
       ))}
     </div>

@@ -28,9 +28,16 @@ export function ChartCard({
   valuePrefix = "$",
 }: ChartCardProps) {
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card
+      className={cn(
+        "overflow-hidden rounded-2xl border-border/60 shadow-soft transition-shadow duration-300 hover:shadow-elegant",
+        className,
+      )}
+    >
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[220px] w-full">
@@ -49,12 +56,12 @@ export function ChartCard({
                 >
                   <stop
                     offset="0%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0.35}
+                    stopColor="hsl(var(--accent))"
+                    stopOpacity={0.4}
                   />
                   <stop
                     offset="100%"
-                    stopColor="hsl(var(--primary))"
+                    stopColor="hsl(var(--accent))"
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -91,7 +98,7 @@ export function ChartCard({
               <Area
                 type="monotone"
                 dataKey={dataKey}
-                stroke="hsl(var(--primary))"
+                stroke="hsl(var(--accent))"
                 strokeWidth={2}
                 fill="url(#chartGradient)"
               />

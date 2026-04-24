@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -27,15 +27,15 @@ function confidenceLabel(value: number): string {
 }
 
 function confidenceColor(value: number): string {
-  if (value >= 0.8) return "text-emerald-500";
-  if (value >= 0.5) return "text-yellow-500";
-  return "text-red-400";
+  if (value >= 0.8) return "text-success";
+  if (value >= 0.5) return "text-warning";
+  return "text-danger";
 }
 
 function confidenceBarColor(value: number): string {
-  if (value >= 0.8) return "bg-emerald-500";
-  if (value >= 0.5) return "bg-yellow-500";
-  return "bg-red-400";
+  if (value >= 0.8) return "bg-success";
+  if (value >= 0.5) return "bg-warning";
+  return "bg-danger";
 }
 
 export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps) {
@@ -72,25 +72,52 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
   }, [generate]);
 
   return (
-    <Card className={cn("flex flex-col", className)} data-testid="token-analysis-card">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <Brain className="h-4 w-4 text-muted-foreground" />
-          AI Analysis
-        </CardTitle>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-hero shadow-elegant",
+        className,
+      )}
+      data-testid="token-analysis-card"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl"
+      />
+
+      <div className="relative z-10 flex flex-row items-center justify-between border-b border-border/40 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
+            <Brain className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+              AI Synthesis
+            </p>
+            <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              {symbol} — AI token analysis
+            </h3>
+          </div>
+        </div>
         {status !== "loading" && (
-          <button
+          <Button
+            variant="glass"
+            size="sm"
             onClick={() => void generate()}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-full text-xs"
             aria-label="Regenerate analysis"
             data-testid="token-analysis-refresh"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
-          </button>
+            <RefreshCw className="h-3 w-3" />
+            <span className="hidden sm:inline">Regenerate</span>
+          </Button>
         )}
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1">
+      <div className="relative z-10 px-6 py-5">
         {status === "loading" && <LoadingSkeleton />}
 
         {status === "error" && (
@@ -101,7 +128,7 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
             </p>
             <button
               onClick={() => void generate()}
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-accent hover:underline"
               data-testid="token-analysis-retry"
             >
               Try again
@@ -119,12 +146,13 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
 
         {status === "idle" && analysis && (
           <div className="space-y-5" data-testid="token-analysis-content">
-            {/* Summary */}
-            <p className="text-sm leading-relaxed text-foreground" data-testid="token-analysis-summary">
+            <p
+              className="text-sm leading-relaxed text-foreground sm:text-base"
+              data-testid="token-analysis-summary"
+            >
               {analysis.summary}
             </p>
 
-            {/* Bullish / Bearish */}
             <div className="grid gap-4 sm:grid-cols-2">
               <FactorList
                 label="Bullish"
@@ -142,21 +170,25 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
               />
             </div>
 
-            {/* Outlook */}
-            <div className="rounded-lg border border-border bg-muted/30 p-3.5">
-              <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <div className="rounded-xl border border-border/50 bg-card/40 p-4 backdrop-blur">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
                 <Eye className="h-3.5 w-3.5" />
                 Short-term Outlook
               </div>
-              <p className="text-sm leading-relaxed text-foreground" data-testid="token-analysis-outlook">
+              <p
+                className="text-sm leading-relaxed text-foreground"
+                data-testid="token-analysis-outlook"
+              >
                 {analysis.outlook}
               </p>
             </div>
 
-            {/* Confidence */}
-            <div className="flex items-center gap-3" data-testid="token-analysis-confidence">
+            <div
+              className="flex items-center gap-3"
+              data-testid="token-analysis-confidence"
+            >
               <span className="text-xs text-muted-foreground">Confidence</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted/60">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
@@ -167,7 +199,7 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
               </div>
               <span
                 className={cn(
-                  "text-xs font-medium",
+                  "text-xs font-medium tabular-nums",
                   confidenceColor(analysis.confidence),
                 )}
               >
@@ -179,8 +211,8 @@ export function TokenAnalysisCard({ symbol, className }: TokenAnalysisCardProps)
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -199,20 +231,31 @@ function FactorList({
 }) {
   const accent =
     color === "emerald"
-      ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
-      : "text-red-400 bg-red-500/10 border-red-500/20";
-  const dotColor = color === "emerald" ? "bg-emerald-500" : "bg-red-400";
+      ? "text-success bg-success/10 border-success/20"
+      : "text-danger bg-danger/10 border-danger/20";
+  const dotColor = color === "emerald" ? "bg-success" : "bg-danger";
 
   return (
-    <div className={cn("rounded-lg border p-3", accent)} data-testid={testId}>
-      <div className="mb-2 flex items-center gap-1.5 text-xs font-medium">
+    <div
+      className={cn("rounded-xl border p-4 backdrop-blur", accent)}
+      data-testid={testId}
+    >
+      <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]">
         {icon}
         {label}
       </div>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
-          <li key={i} className="flex gap-2 text-xs leading-snug text-foreground">
-            <span className={cn("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", dotColor)} />
+          <li
+            key={i}
+            className="flex gap-2 text-xs leading-snug text-foreground"
+          >
+            <span
+              className={cn(
+                "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                dotColor,
+              )}
+            />
             {item}
           </li>
         ))}
@@ -225,16 +268,16 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-5" data-testid="token-analysis-loading">
       <div className="space-y-2">
-        <div className="h-4 w-full animate-pulse rounded bg-muted" />
-        <div className="h-4 w-5/6 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-full rounded animate-shimmer" />
+        <div className="h-4 w-5/6 rounded animate-shimmer" />
+        <div className="h-4 w-3/4 rounded animate-shimmer" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="h-28 animate-pulse rounded-lg bg-muted/60" />
-        <div className="h-28 animate-pulse rounded-lg bg-muted/60" />
+        <div className="h-28 rounded-xl animate-shimmer" />
+        <div className="h-28 rounded-xl animate-shimmer" />
       </div>
-      <div className="h-20 animate-pulse rounded-lg bg-muted/60" />
-      <div className="h-4 w-1/2 animate-pulse rounded bg-muted/40" />
+      <div className="h-20 rounded-xl animate-shimmer" />
+      <div className="h-4 w-1/2 rounded animate-shimmer" />
     </div>
   );
 }

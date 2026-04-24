@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { TokenHeader } from "@/components/token/TokenHeader";
 import { TokenChart } from "@/components/token/TokenChart";
 import { TokenStats } from "@/components/token/TokenStats";
@@ -18,11 +17,11 @@ export async function generateMetadata({
   const { symbol } = await params;
   const upper = symbol.toUpperCase();
   if (!SUPPORTED_SYMBOLS.has(upper)) {
-    return { title: "Token not supported | Crypto AI" };
+    return { title: "Not available for AI token analysis | Crypto AI" };
   }
   return {
     title: `${upper} | Crypto AI`,
-    description: `Token overview for ${upper}.`,
+    description: `AI token analysis and market view for ${upper}.`,
   };
 }
 
@@ -40,18 +39,27 @@ export default async function TokenPage({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild aria-label="Back to dashboard">
-          <Link href="/app">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
+      <nav
+        aria-label="Breadcrumb"
+        className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground"
+      >
+        <Link
+          href="/app"
+          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/60 px-2.5 py-1 backdrop-blur transition-colors hover:border-border hover:text-foreground"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          Market Overview
+        </Link>
+        <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+        <span className="text-foreground">AI Token Analysis</span>
+        <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+        <span className="text-foreground">{upper}</span>
+      </nav>
 
       <TokenHeader symbol={upper} />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <TokenChart symbol={upper} />
         </div>
         <TokenStats symbol={upper} />

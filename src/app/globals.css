@@ -31,12 +31,33 @@
     --chart-4: 43 96% 56%;
     --chart-5: 27 96% 61%;
 
+    /* ─── Crypto / AI semantic roles ─────────────────────────────
+     * These replace ad-hoc uses of `text-emerald-400`, `text-red-400`,
+     * `text-amber-400`, `text-sky-400`, `text-violet-400` etc. Values
+     * are tuned for readable contrast on a near-white page.
+     */
+    --success: 152 60% 36%;
+    --success-foreground: 0 0% 100%;
+    --danger: 0 72% 48%;
+    --danger-foreground: 0 0% 100%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 100%;
+    --info: 200 82% 42%;
+    --info-foreground: 0 0% 100%;
+    --ai: 262 68% 52%;
+    --ai-foreground: 0 0% 100%;
+
+    /* Surface aliases (semantic names around existing tokens) */
+    --surface-elevated: var(--card);
+    --surface-muted: var(--muted);
+
     /* ─── Landing design tokens ──────────────────────────────────── */
     --primary-glow: hsl(234 65% 70%);
     --accent-glow: hsl(152 45% 65%);
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 99%) 0%, hsl(220 60% 97%) 50%, hsl(152 40% 95%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(234 65% 55%) 0%, hsl(234 65% 70%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(234 65% 55%) 0%, hsl(152 45% 50%) 100%);
+    --gradient-ai: linear-gradient(135deg, hsl(234 65% 55%) 0%, hsl(262 68% 60%) 100%);
     --gradient-text: linear-gradient(135deg, hsl(234 65% 50%) 0%, hsl(200 65% 55%) 50%, hsl(152 50% 45%) 100%);
     --shadow-soft: 0 2px 10px -2px hsl(234 65% 55% / 0.10);
     --shadow-elegant: 0 20px 50px -20px hsl(234 65% 55% / 0.20);
@@ -45,44 +66,91 @@
   }
 
   /* ─── Dark theme (platform app) ─────────────────────────────── */
+  /*
+   * Same color roles as :root (landing): indigo is primary, emerald
+   * is accent, cyan/amber in charts — expressed on a near-black canvas.
+   * Gradients and shadow hues are aligned with the landing design tokens
+   * above, with only lightness/alpha tuned for legibility on dark UIs.
+   */
   .dark {
-    --background: 222 47% 6%;
+    --background: 222 35% 5%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
+    --card: 220 30% 8%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
+    --popover: 220 30% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 160 84% 39%;
+    /* Match landing: --primary (indigo) */
+    --primary: 234 65% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 17%;
+    --secondary: 220 25% 12%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 160 60% 25%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 160 84% 39%;
-    --radius: 0.5rem;
-    --chart-1: 160 84% 39%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 45%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 27 96% 61%;
+    --muted: 222 28% 12%;
+    --muted-foreground: 220 12% 64%;
+    /* Match landing: --accent (emerald) */
+    --accent: 152 45% 50%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 85% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 22% 16%;
+    --input: 220 22% 16%;
+    --ring: 234 65% 55%;
+    --radius: 0.875rem;
+    --chart-1: 234 65% 55%;
+    --chart-2: 152 45% 50%;
+    --chart-3: 197 45% 55%;
+    --chart-4: 43 96% 55%;
+    --chart-5: 27 96% 60%;
 
-    /* ─── Dark design tokens ─────────────────────────────────────── */
-    --primary-glow: hsl(160 84% 55%);
-    --accent-glow: hsl(160 60% 45%);
-    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(160 47% 8%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 84% 55%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 60% 25%) 100%);
-    --gradient-text: linear-gradient(135deg, hsl(160 84% 55%) 0%, hsl(173 58% 55%) 50%, hsl(197 60% 65%) 100%);
-    --shadow-soft: 0 2px 10px -2px hsl(160 84% 39% / 0.12);
-    --shadow-elegant: 0 20px 50px -20px hsl(160 84% 39% / 0.35);
-    --shadow-glow: 0 10px 40px -10px hsl(160 60% 45% / 0.50);
-    --shadow-card: 0 4px 24px -8px hsl(160 84% 39% / 0.18);
+    /* Crypto / AI semantic roles — tuned for dark surfaces */
+    --success: 152 55% 55%;
+    --success-foreground: 222 47% 11%;
+    --danger: 0 82% 65%;
+    --danger-foreground: 0 0% 100%;
+    --warning: 43 96% 58%;
+    --warning-foreground: 222 47% 11%;
+    --info: 198 93% 60%;
+    --info-foreground: 222 47% 11%;
+    --ai: 258 90% 72%;
+    --ai-foreground: 222 47% 11%;
+
+    /* Surface aliases (semantic names around existing tokens) */
+    --surface-elevated: var(--card);
+    --surface-muted: var(--muted);
+
+    /* Same formulas as :root, tuned for dark surfaces (see above) */
+    --primary-glow: hsl(234 65% 70%);
+    --accent-glow: hsl(152 45% 65%);
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(222 40% 5%) 0%,
+      hsl(234 32% 10%) 50%,
+      hsl(152 32% 8%) 100%
+    );
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(234 65% 55%) 0%,
+      hsl(234 65% 70%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(234 65% 55%) 0%,
+      hsl(152 45% 50%) 100%
+    );
+    --gradient-ai: linear-gradient(
+      135deg,
+      hsl(234 65% 55%) 0%,
+      hsl(258 90% 72%) 100%
+    );
+    --gradient-text: linear-gradient(
+      135deg,
+      hsl(234 70% 72%) 0%,
+      hsl(200 70% 68%) 50%,
+      hsl(152 50% 58%) 100%
+    );
+    --shadow-soft: 0 2px 10px -2px hsl(234 65% 55% / 0.16);
+    --shadow-elegant: 0 20px 50px -20px hsl(234 65% 55% / 0.42);
+    --shadow-glow: 0 10px 40px -10px hsl(152 45% 50% / 0.38);
+    --shadow-card: 0 4px 24px -8px hsl(234 65% 55% / 0.2);
   }
 }
 
@@ -103,7 +171,50 @@
   background-size: 24px 24px;
 }
 
+/*
+ * Grid pattern that fades out toward the bottom of the viewport.
+ * Gives the app shell an elegant "horizon" feel without the whole
+ * screen feeling busy. Used on the app main background.
+ */
+.bg-grid-fade {
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.18) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 85%);
+}
+
+/* Subtle film-grain to keep gradient panels from banding */
+.bg-noise {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
 /* Glow accent for key metrics */
 .glow-accent {
   box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);
+}
+
+/* Soft outer glow for focus/hover parity with landing shadow-glow */
+.ring-glow {
+  box-shadow:
+    0 0 0 1px hsl(var(--accent) / 0.35),
+    0 10px 40px -10px hsl(var(--accent) / 0.45);
+}
+
+/* Shimmering skeleton used in premium loading states */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted) / 0.6) 0%,
+    hsl(var(--muted) / 0.9) 50%,
+    hsl(var(--muted) / 0.6) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }

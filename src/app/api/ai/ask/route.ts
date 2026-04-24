@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("[ask] POST failed:", message);
     return NextResponse.json(
-      { error: "Ask AI service failed. Please try again.", durationMs: Date.now() - start },
+      { error: "The AI service failed. Please try again.", durationMs: Date.now() - start },
       { status: 500 },
     );
   }
