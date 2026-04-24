@@ -220,7 +220,7 @@ After running experiments:
 
 ## Testing
 
-Per project rules, add a Playwright test in `tests/e2e/eval-market-brief.spec.ts` that verifies the eval API endpoint (if exposed) or the eval script runs without errors. Alternatively, since this is a CLI-only feature, add a basic integration test that validates evaluator functions against fixture data.
+For this CLI-heavy feature, validate via the `eval:market-brief` script and/or unit-style checks that evaluator functions behave as expected against fixture data.
 
 ## Implementation Order
 
@@ -231,4 +231,3 @@ Per project rules, add a Playwright test in `tests/e2e/eval-market-brief.spec.ts
 5. Build experiment runner in `src/ai/eval/market-brief/experiment.ts`
 6. Create CLI entry point `scripts/eval-market-brief.ts`
 7. Add `tsx` devDependency and `eval:market-brief` script to `package.json`
-8. Add Playwright test for evaluator functions against fixture data

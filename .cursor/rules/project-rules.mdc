@@ -318,10 +318,13 @@ Never:
 • call LLMs directly inside React components
 • fetch market data inside UI components
 • duplicate API logic
+• use Playwright or add `@playwright/test` (no E2E browser tests with Playwright)
 
 ---
 
 # 14. Testing Rules
+
+Do not use Playwright. Rely on manual checklists, validation, and API-level checks as described below.
 
 Every new AI feature must include:
 
@@ -380,8 +383,8 @@ When implementing features:
 
 Always read /docs before generating code.
 Use architecture.md and roadmap.md as the source of truth.
-Never introduce Playwright in future steps.
 All AI calls must go through Model Router.
 Langfuse must wrap every AI call.
+Do not use Playwright or introduce Playwright-related dependencies.
 
 This document is the **system architecture reference** for all future development.
