@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
+import { AppCta } from "./AppCta";
 
 export function Header() {
   return (
@@ -22,12 +23,12 @@ export function Header() {
           <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
         </nav>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+          <Button variant="ghost" size="sm" className="hidden md:inline-flex" asChild>
             <Link href="/app">Sign in</Link>
           </Button>
-          <Button variant="hero" size="sm" asChild>
-            <Link href="/app">Go to app</Link>
-          </Button>
+          <AppCta variant="hero" size="sm" mobileLabel="Get mobile access">
+            Go to app
+          </AppCta>
         </div>
       </div>
     </header>

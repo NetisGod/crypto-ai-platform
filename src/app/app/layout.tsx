@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AppShell } from "@/components/theme/app-shell";
+import { AppMobileBlock } from "@/components/landing/AppMobileBlock";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -45,6 +46,7 @@ export default function AppLayout({
             </div>
           </main>
         </div>
+        <AppMobileBlock />
       </AppShell>
     </ThemeProvider>
   );

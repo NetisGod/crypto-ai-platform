@@ -9,6 +9,7 @@ import { Pricing } from "@/components/landing/Pricing";
 import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
 import { CookieConsent } from "@/components/landing/CookieConsent";
+import { MobileWaitlistProvider } from "@/components/landing/MobileWaitlist";
 
 const SITE_URL = "https://cointraceai.com";
 const PAGE_TITLE = "CoinTrace AI — AI-Powered Crypto Trading Analytics";
@@ -98,18 +99,20 @@ export default function LandingPage() {
           ]),
         }}
       />
-      <Header />
-      <main>
-        <Hero />
-        <LogoCloud />
-        <Features />
-        <Stats />
-        <FreeAiSamples />
-        <Pricing />
-        <CTA />
-      </main>
-      <Footer />
-      <CookieConsent />
+      <MobileWaitlistProvider>
+        <Header />
+        <main>
+          <Hero />
+          <LogoCloud />
+          <Features />
+          <Stats />
+          <FreeAiSamples />
+          <Pricing />
+          <CTA />
+        </main>
+        <Footer />
+        <CookieConsent />
+      </MobileWaitlistProvider>
     </div>
   );
 }

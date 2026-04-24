@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   animate,
@@ -13,6 +12,7 @@ import {
 } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, ShieldCheck } from "lucide-react";
+import { AppCta } from "./AppCta";
 
 const FORECAST_START = 1.2;
 const FORECAST_END = 4.82;
@@ -45,12 +45,12 @@ function BtcForecastCard({ cardBottomY }: { cardBottomY: MotionValue<number> }) 
         transition: { type: "spring", stiffness: 400, damping: 22 },
       }}
       whileTap={{ scale: 0.98 }}
-      className="absolute -bottom-6 -left-6 hidden cursor-default rounded-2xl border border-border/60 bg-card/90 p-4 shadow-card backdrop-blur transition-shadow hover:shadow-elegant sm:block"
+      className="absolute -bottom-4 -left-3 cursor-default rounded-2xl border border-border/60 bg-card/90 p-3 shadow-card backdrop-blur transition-shadow hover:shadow-elegant sm:-bottom-6 sm:-left-6 sm:p-4"
       data-testid="hero-btc-forecast"
     >
-      <p className="text-xs font-medium text-muted-foreground">BTC · 24h forecast</p>
-      <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">{label}</p>
-      <div className="relative mt-2 h-1.5 w-32 overflow-hidden rounded-full bg-muted">
+      <p className="text-[10px] font-medium text-muted-foreground sm:text-xs">BTC · 24h forecast</p>
+      <p className="mt-1 text-xl font-semibold text-foreground tabular-nums sm:text-2xl">{label}</p>
+      <div className="relative mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:w-32">
         <motion.div
           className="h-full w-[75%] origin-left rounded-full bg-gradient-primary"
           initial={{ scaleX: 0 }}
@@ -160,12 +160,15 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
             className="mt-10 flex flex-wrap items-center gap-4"
           >
-            <Button variant="hero" size="lg" className="group" asChild>
-              <Link href="/app">
-                Start trading free
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </Button>
+            <AppCta
+              variant="hero"
+              size="lg"
+              className="group"
+              mobileLabel="Get mobile access"
+            >
+              Start trading free
+              <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </AppCta>
             <Button variant="outline" size="lg">
               <Play className="mr-1 h-4 w-4" /> Watch demo
             </Button>
@@ -212,10 +215,10 @@ export function Hero() {
             initial={{ opacity: 0, x: 20, y: -20 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5, ease: "easeOut" }}
-            className="absolute -top-6 right-4 hidden rounded-2xl border border-border/60 bg-card/90 p-4 shadow-card backdrop-blur sm:block"
+            className="absolute -top-4 right-3 rounded-2xl border border-border/60 bg-card/90 p-3 shadow-card backdrop-blur sm:-top-6 sm:right-4 sm:p-4"
           >
-            <p className="text-xs font-medium text-muted-foreground">Confidence</p>
-            <p className="mt-1 text-2xl font-semibold text-primary tabular-nums">94%</p>
+            <p className="text-[10px] font-medium text-muted-foreground sm:text-xs">Confidence</p>
+            <p className="mt-1 text-xl font-semibold text-primary tabular-nums sm:text-2xl">94%</p>
           </motion.div>
         </div>
       </div>

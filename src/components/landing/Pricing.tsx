@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { AppCta } from "./AppCta";
 import { Reveal } from "./Reveal";
 
 const plans = [
@@ -89,9 +88,14 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button variant={p.variant} size="lg" className="mt-10 w-full shrink-0" asChild>
-                <Link href="/app">{p.cta}</Link>
-              </Button>
+              <AppCta
+                variant={p.variant}
+                size="lg"
+                className="mt-10 w-full shrink-0"
+                mobileLabel="Get mobile access"
+              >
+                {p.cta}
+              </AppCta>
             </motion.div>
           ))}
         </div>

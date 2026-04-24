@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { AppCta } from "./AppCta";
 import { Reveal } from "./Reveal";
 
 export function CTA() {
@@ -31,12 +31,15 @@ export function CTA() {
               Join thousands of traders using CoinTrace AI to outperform the market — every single day.
             </p>
             <div className="relative mt-10 flex flex-wrap justify-center gap-4">
-              <Button variant="hero" size="lg" className="group" asChild>
-                <Link href="/app">
-                  Start trading free
-                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </Button>
+              <AppCta
+                variant="hero"
+                size="lg"
+                className="group"
+                mobileLabel="Get mobile access"
+              >
+                Start trading free
+                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </AppCta>
               <Button variant="outline" size="lg">
                 Talk to sales
               </Button>
