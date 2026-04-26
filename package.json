@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "verify:token-chart": "node scripts/verify-token-chart.mjs",
-    "eval:market-brief": "tsx scripts/eval-market-brief.ts"
+    "eval:market-brief": "tsx scripts/eval-market-brief.ts",
+    "generate:favicons": "node scripts/generate-favicons.mjs"
   },
   "dependencies": {
     "@extractus/article-extractor": "^8.0.20",
@@ -45,6 +46,7 @@
     "dotenv": "^17.4.1",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "tailwindcss-animate": "^1.0.7",

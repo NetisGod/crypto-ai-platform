@@ -10,11 +10,17 @@ import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
 import { CookieConsent } from "@/components/landing/CookieConsent";
 import { MobileWaitlistProvider } from "@/components/landing/MobileWaitlist";
+import { JsonLd } from "@/components/seo/JsonLd";
+import {
+  createOrganizationJsonLd,
+  createSoftwareApplicationJsonLd,
+  createWebsiteJsonLd,
+  SITE_URL,
+} from "@/lib/seo";
 
-const SITE_URL = "https://cointraceai.com";
-const PAGE_TITLE = "CoinTrace AI — AI-Powered Crypto Trading Analytics";
+const PAGE_TITLE = "CoinTrace AI — AI Crypto Market Intelligence";
 const PAGE_DESCRIPTION =
-  "Trade crypto smarter with AI-powered signals, predictive analytics, and automated strategies. Real-time market intelligence across 500+ assets.";
+  "Research crypto markets with AI-assisted market briefs, token analysis, narrative detection, news context, and risk-aware explanations.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -33,7 +39,7 @@ export const metadata: Metadata = {
         url: "/landing/hero-ai-crypto.jpg",
         width: 1280,
         height: 1280,
-        alt: "CoinTrace AI — AI-powered crypto analytics dashboard",
+        alt: "CoinTrace AI — AI crypto market intelligence dashboard",
       },
     ],
   },
@@ -49,55 +55,15 @@ export const metadata: Metadata = {
   },
 };
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "CoinTrace AI",
-  url: SITE_URL,
-  logo: `${SITE_URL}/landing/logo-coin-trace.png`,
-  description: PAGE_DESCRIPTION,
-  sameAs: [] as string[],
-};
-
-const websiteJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "CoinTrace AI",
-  url: SITE_URL,
-  description: PAGE_DESCRIPTION,
-  publisher: {
-    "@type": "Organization",
-    name: "CoinTrace AI",
-  },
-};
-
-const softwareApplicationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "CoinTrace AI",
-  applicationCategory: "FinanceApplication",
-  operatingSystem: "Web",
-  url: SITE_URL,
-  description: PAGE_DESCRIPTION,
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-};
-
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            organizationJsonLd,
-            websiteJsonLd,
-            softwareApplicationJsonLd,
-          ]),
-        }}
+      <JsonLd
+        data={[
+          createOrganizationJsonLd(),
+          createWebsiteJsonLd(),
+          createSoftwareApplicationJsonLd(),
+        ]}
       />
       <MobileWaitlistProvider>
         <Header />

@@ -1,4 +1,5 @@
 import { Logo } from "@/components/brand/logo";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -12,10 +13,13 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} CoinTrace AI. Trading involves risk. Not financial advice.
           </p>
-          <div className="flex gap-6 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Security</a>
+          <div className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms</Link>
+            <Link href="/risk-disclaimer" className="hover:text-foreground">
+              Risk Disclaimer
+            </Link>
+            <Link href="/about" className="hover:text-foreground">About</Link>
           </div>
         </div>
       </div>

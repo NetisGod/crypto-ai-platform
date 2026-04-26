@@ -12,15 +12,16 @@ export function Header() {
           <span className="text-lg font-semibold tracking-tight text-foreground">CoinTrace AI</span>
         </Link>
         <nav className="hidden items-center gap-5 lg:gap-7 xl:gap-8 md:flex">
-          <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Features</a>
-          <a href="#analytics" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Analytics</a>
-          <a
-            href="#samples"
+          <Link href="/#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Features</Link>
+          <Link href="/#analytics" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Analytics</Link>
+          <Link
+            href="/#samples"
             className="whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Free AI Analysis Samples
-          </a>
-          <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
+          </Link>
+          <Link href="/crypto-market-intelligence" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">SEO Guides</Link>
+          <Link href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</Link>
         </nav>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" className="hidden md:inline-flex" asChild>
